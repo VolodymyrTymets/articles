@@ -10,7 +10,9 @@ Nowadays, the numbers of operation for organs of neck constantly increases. The 
 On the First Word Congress of Neural Monitoring in Thyroid and Parathyroid Surgery, which took place in Krakow in September 2015 [1], the variety of technical and software tools for identification the RLN positioning in a surgical wound are present. Functioning principle of these tools is based on the electrophysiological method of stimulation the tissues in surgical wound by a direct or alternate current with next registration and processing the results of stimulation with purpose of identification the informative characteristics of tissues kind. The new methods tools and mathematical models for the RLN identification are firstly considered in papers [2-5].
 ## TASK STATEMENT
 In paper [8] it is described a scheme of application for new method and hardware for development the RLN monitoring system. This approach based of stimulating the tissues in signal wound by an alternating current. Then, result of simulation is recorded by sound sensor implemented in an endotracheal tube above vocal cords. The scheme of the method is shown in Fig.1
+
 ![](https://image.ibb.co/e5puo5/2017_04_19_20_45_12.png)
+
 > 1 is respiratory tube, 2 is larynx, 3 is sound sensor, 4 are vocal cords, 5 is probe, 6 is surgical wound, 7 is alternator, 8 is amplifier, 9 is audio input and ou put card in computer
 
 Fig. 1 Method of RLN identification among tissues in surgical wound.
@@ -19,7 +21,9 @@ In paper [6] is describing scheme of execution RLN method.
  In respirator tube 1 that inserted in larynx 2, the sound sensor 3 implemented and positioned above vocal cords 4. By means of probe 5 is connected to an alternator 7 with current strength from 0.5 to 2 mA and fixed frequency which provides small conductivity of electric signal by muscular tissues high conductivity of electrical signal a laryngeal nerve muscles witch control the tension of vocal cords.      
 An a passing through a respiratory tube creates voice vibrations witch amplitude and spectrum are changing due to modulation the vibration of vocal cords in accordance witch frequency of simulation current. This vibration are registered by sound sensor 3 into electric signal and amplifying by amplifier 8 and sending to standard audio on sound card of computer 9 where this signal is processing.
 This approach requires, a personal computer for processing the digital signal from the amplifier and generating an alternator. The disadvantage of this method, that he cannot be implemented as a single device. Therefore suggested to replace personal computer and alternator for single-board computers. The scheme of this approach is shown in Fig.2.
+
 ![](https://image.ibb.co/ipuoFk/2017_04_19_20_52_05.png)
+
 >1 is respiratory tube, 2 is larynx, 3 is sound sensor, 4 are vocal cords, 5 is probe, 6 is surgical wound, 7 single-board computer, 8 is amplifier,
 
 Fig. 2 Method of RLN identification among tissues in surgical wound, by using single-board computer.
@@ -37,7 +41,9 @@ After building ACF for each segment of the information signal, use a Fourier tra
 ## EMULATED ECOSYSTEM ENVIRONMENTS
 To replace personal computer and alternator for single-board computers need choice something with sound card and output system to generate  a signal. The best choice for this is a Raspberry pi 3 model b. 
 The Raspberry Pi is a series of small single-board computers developed in the United Kingdom by the Raspberry Pi Foundation to promote the teaching of basic computer science in schools and in developing countries[7]. The scheme of the Raspberry Pi is shown in Fig.3.
+
 ![](https://image.ibb.co/ikVZo5/2017_04_19_20_54_35.png)
+
 Fig. 3 Shema of single-board computer Raspberry pi 3 model b.
 
 Why Raspberry Pi? There are two giant upgrades in the Pi 3. The first is a next generation Quad Core Broadcom BCM2837 64-bit ARMv8 processor, making the processor speed increase from 900 MHz on the Pi 2 to up to 1.2GHz on the Pi 3.
@@ -49,6 +55,7 @@ The Raspberry pi 3 model bhas next list of characteristics: processor (Broadcom 
 As said, in chapter above single-board computer Raspberry pi 3 model b can work under control Linux. References. Linux its generic name UNIX-like operating systems, based on the same core. It's totally free system based by Richard Stolman in 1983.
 Via this operating system, can use Node.js and npm ecosystem. Node js is a JavaScript runtime built on Chrome's V8 JavaScript engine. Node.js uses an event-driven, non-blocking I/O model that makes it lightweight and efficient. Npm - node.js package ecosystem, is the largest ecosystem of open source libraries in the world.
 To get accurate result ought, the  developed emulation module should work with reliable data. Since, not possible to work with real people used pre-recorded signals from patients. . The scheme of the developed module is shown in Fig.4.  
+
 ![](https://image.ibb.co/dj3b1Q/2017_04_19_20_55_34.png)
 
 > 1 microfon, 2 sound recognize module, 3 wav file, 4 file decoder module, 5 sound encrypt module, 
