@@ -102,15 +102,25 @@ Is offered replace personal computer and alternator for single-board computers. 
 Was designed and emulated temporary module processing audio signals. This module can be successfully launched on Raspberry pi 3 model b in futher.
 ## REFERENCES
 [1] Abstract book of First World Congress of Neural Monitoring in Thyroid and Parathyroid Surgery, Krakow, Poland, September 20 l 5, 16 l p
+
  [2] VH. Riddell, "Thyroidectomy: prevention of bilateral recurrent nerve palsy," British Journal of Surgery, vo 57 no. 1, pp. 1-1 l, Jan. 1970 
+ 
 [3] J. Galivan and C. Galivan, "Recurrent laryngeal nerve identification during thyroid and parathyroid surgery, Otolaryngology Head and Neck Surgery, vol. 112, no l 2, pp. 1286-1288, Dec. 1986 
+
 [4] J.V. Basmajian, Muscles Alive Their Functions Revealed by Electromyography (5-th Ed.) Baltimore: Williams and Wilkins, 1985
+
 [5] W E. Davis et al., "Reccurent laryngeal nerve localization using a microlaryngeal electrode", Otolaryngology Head and Neck Surgery, vol, 87, no. 3, pp. 330-333, May Jun. 1979 
- [6] M. Dyvak et al., Interval model for identification of laryngeal nerves," Przeglad Elektrotechni vol. 86 no. 1, pp. 139-140, 2010
+
+[6] M. Dyvak et al., Interval model for identification of laryngeal nerves," Przeglad Elektrotechni vol. 86 no. 1, pp. 139-140, 2010
+
 [7].Bush, Steve (25 May 2011). "Dongle computer lets kids discover programming on a TV". Electronics Weekly. Retrieved 11 July 2011.
+
 [8] M. Dyvak et al., “Spectral analysis the information signal in the task of identification the recurrent laryngeal nerve in thyroid surgery,” Przegląd Elektrotechniczny, vol. 89, no. 6, рр.275- 277, 2013. 
+
 [9] M. Dyvak et al., “Interval model for identification of laryngeal nerves,” Przegląd Elektrotechniczny, vol. 86, no. 1, pp. 139-140, 2010. 
+
 [10] M. Dyvak et al., “Algorithms of parallel calculations in task of tolerance ellipsoidal estimation of interval model parameters,” Bulletin of the Polish Academy of Sciences-Technical Sciences, Vol. 60, no. 1, pp.159-164, 2012. 
+
 [11] V. P. Diakonov, MATLAB 6.5 SP1/7.0 and Simulink 5/6: Signal processing and filter design. Мoscow: Solon Press, 2005, 676 p.
 
 
