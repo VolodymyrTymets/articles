@@ -54,12 +54,16 @@ module.exports = app;
 ## Dealing with data
 > We're planning to show here the example of how you can get access to the data, using MongoDB.
 
-Тепер настав час перейти до оголошення наших моделей. Оскільки для зберігання даних ми використовуємо [mongo](https://www.mongodb.com/) базу даних то побудуємо наші моделі за допомогою [mongoose](http://mongoosejs.com/docs/populate.html).
-> todo: структура бази даних ?
+__Крок 2__ Оголошення моделей
+Кожне апі зазвичай працює з якимись даними. І наше майбутнє апі не авиключення. Нижче наведена приблизна структура бази даних для  forum-like application.
+
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig2.png?raw=true)
+
+Відповідно до цієї структури ми оголошуємо наші моделі. Оскільки для зберігання даних ми використовуємо [mongo](https://www.mongodb.com/) базу даних то побудуємо наші моделі за допомогою [mongoose](http://mongoosejs.com/docs/populate.html).
 
 Деректорія models виглядатиме наступним чином.
 
-![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig2.png?raw=true)
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig3.png?raw=true)
 
 - `schema.js` - це схема моделі детальніше [тут](http://mongoosejs.com/docs/schematypes.html)
 - `model.js` - це саме обєднання mongoose mмоделі та схеми. Це зроблено в окремих файлах тому що mongoose надає можливість розширяти ваші моделі різними методами і хуками. Тримати усе це + схема, яка сама по собі здатна розростатися чимало, призведе до того що ваш файл займатиме 500+ строчок. А це не дуже добре.
@@ -75,24 +79,37 @@ schema.pre('save', function() {
 const Answer = mongoose.model('Answer', schema);
 module.exports = { Answer };
 ```
-> todo: щось ще дописати 
+За аналогічною схнмою оголошуємо усі інші наші моделі та схеми для них.  
 ## What about routes? 
 > Routes structuring. Organization, documentation, and description tips and tricks.
 
-## Routes and data together. How to not get lost
+__Крок 3__ Оголошення контроллерів
 Тепер перейдем до роутів або контроллерів. Контроллери також слід поділити у відповідності до ваших моделей так як зображено нижче.
 
-![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig3.png?raw=true)
-
-Таким чином у деректорії `controllers` кожна підерикторія представлятиме певну модель. Кожен файл відповідно представлятиме single Api endpoint.
 ![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig4.png?raw=true)
 
-Такий підхід дозволить максимально розділити код вашого апі і уникнути безглуздого зберігання усіх Api endpoints в одному файлі. Ось як виглядатиме приклад реалізації  `GET /questioms` та `GET /questioms:_id` Api endpoints.
+Таким чином у деректорії `controllers` кожна підерикторія представлятиме певну модель. Кожен файл відповідно представлятиме single Api endpoint.
 ![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig5.png?raw=true)
 
-> todo: описати mongose module
+Такий підхід дозволить максимально розділити код вашого апі і уникнути безглуздого зберігання усіх Api endpoints в одному файлі. Ось як виглядатиме приклад реалізації  `GET /questions` та `GET /questions:_id` Api endpoints.
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig6.png?raw=true)
+
+Як можна було замітити у `./list.js` першим параметром приходить `Question`. Це mongooose модель з якою тепер можна просто працбювати. Також можна даний обєкт містить всі моделі у нашому апі. Таким чином  можна зручно використовувати любу модель в любому контроллері не імпортуючи її. Завдяки цьому код також виглядає компактніші і дозволяє уникнути помилок при імпортах. Як усе це реалізувати показано у наступному розділі.  
+
+## Routes and data together. How to not get lost
+__Крок 4__ Реєстрація моделей та контроллерів
+Ми розглянули як створити моделі та контроллери у нашому апі. також було показано як використовувати моделі в середені контроллера тепер слід розглянути як повязати моделі і контроллери разом. Усе відбувається у файлі `.src/api/index.js`.
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig7.png?raw=true)
+
+Тут відбувається три основні речі.
+1. Імпорт та реєстрація контроллерів.
+2. Імпорт комбінування моделей та передача їх у контроллери.
+3. Реєстрація обробника помилок, який перехвачуватиме помилки з усіх контроллерів (його реалізація показана в наступному розділі)
+
+Таким чином, по мірі розростання проекту, ви реєструєте нові моделі та контроллери в обному місці. А даний файл виконується в `app.js` як показано в на кроці 1.
 
 ## Additional recommendations you can't omit
+__Крок 5__ Додатковий функціонал
  - how to handle errors/bugs
  - how to implement additional features for the app.
 
