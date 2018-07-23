@@ -1,295 +1,162 @@
-# Express Api професійно
+# Api
+Більшість свого часу програмісти прцюють із кодом проектів які зачастую розроблялися кимось до них або ж він створювався достатньо давно.  Тому часто коли приходиться пчинати проект з нуля часто виникає ряд питаня. З чого почати? Як це все заставити працювати? Чому я це повининен робити? 
+В даній статті я хотів поділитися тим як в кілька кроків настроїти boilerplate для API невеличкого forum-like application based on express
 
-[Express js](http://expressjs.com/) це чудовий фрейморк для розробки Rest Api на мові програмування java script. Він працює під управління [node js](https://nodejs.org/en/), який прекрасно підходить для додаткі обробки потоків вводу/виводу. Або ж  [rest server](https://en.wikipedia.org/wiki/Representational_state_transfer). Про те як почати писати на express js уже написано достатньо статей уроків і туторіалів. В цій статті я б хотів поділитися своїм досвідом у організаці express rest api додатку та відповісти на кілька намтупних запитань.
+## API for the forum-like application. Where should I begin?
+> This part refers to the preparation processes and where a developer should start when building a forum-like app.
 
-- Як організувати структуру rest Api?
-- Як обробляти помилки та виключення?
-- Як організувати rest запити?
+Перш за все слід обдумати функціональні вимоги поставленні перед вашим додатком. В залежності від них структура може мінятися. Наприклад чи потрібний у вашому додатку механізм авторизації чинію. Чи буде шттеграція із іншими сервісами чи ні. Всі інші додаткові функціональні вимоги типу генерації звітів (pdf, xml, csv) відправка емейлів тощо.
 
-## Структура rest api
-Розробка rest api це посуті опис шляхів (routs) за якими до вашого сервера буду звертатися клієнти а можливо інші сервіси. Тому їх організація та інтуїтивно зрозумілий опис є надзвичано важливими. Великий rest api серрвер може виконувати безліч операцій.  Велика помилка яку часто роблять розробники це створення окремих роутів на кожну операцію. Це призводить до неконтрольованого росту роутів. Але ж про ці всі роути слід знати (на що здатен сервер) іншим розробникам. Це добре якщо кожний роут задукоментований. А якщо ні це може призвести до великої путанини і великиз затрат часу на розуміння іншими  вашого api.
+- функціональні вимоги вашого додатку
+- дані якими він оперуватими 
+- методи розробки
+## Can boilerplate be perfect?  
+> We plan to unveil here code organization and folders structuring best practices. Tips (based on personal experience) with examples which others might find useful.
 
-Щоб уникнути цього та мінімізувати кількість роутів у вашому api старайтеся слідувати логіці rest. У rest є 4 основні види запитів __GET__, __POST__, __UPDAE__, __DELETE__. Старайтеся позиціонувати кожну операцію їз цими запиами. Наприклад якщо вам слід оновти якусь сутність використувуйте запити __UPDATE__ якщо удалити __DELETE__.
-Також старайтеся позиціонувати кожеш ваш роут з моделлю бізнес логіки. Нижче наведена таблиця і 5 роутів для обробки одніїє моделі бізнес логіки.
-
-| Route                   |  HTTP Verb | Description               |
-|-------------------------|------------|---------------------------|
-|`/api/v1/models/`        |__GET__     | Get list of models        |
-|`/api/v1/models/:modelId`|__GET__     | Get  model item           |
-|`/api/v1/models/`        |__POST__    | Crete model Item          |
-|`/api/v1/models/:modelId`| __PUT__    | Update model Item         |
-|`/api/v1/models/:modelId`| __DELETE__ | Remove model item         |
-
-У таблиці наведено варіанти роутів та відповідні методи, щоб забезпечити CRUD (create, read, update, delete) над певною моделлю. Дортримуючись даного підходу для кожної моделі і не створюючи додаткових роутів ви значно скоротете ваше Api та покращете його розуміння дл інших розробників.
-#### Params
-__А як же додаткові параметри?__ Припустим нам необхідно вернути список моделей відсорованих та пофільтрованих. Для цього не варто створювати додатковий роут типу `/api/v1/models/sorted/:param`. Достатньо використати __qery__ параметри. І роут матиме наступний вигляд `/api/v1/models?sort=name`. Таких параметрів можне буте набагато більше. Вони є не обовязковими тому їх використання дозволить вам обробити кілька операцій на одному роуті. Можна подумати що таку стрічку набагато важче формувати на клієнті проте ні. Як це зробити коректно я покажу нижче.
-### Code organization
-Кілька прорад для розробників по оргацізації коду.
-- починайте кожен ваш роут `/api/v1/`
- можливо у майбутньому прийдеться переписати ваше api зберігши функціональність старого на деякий час.
-- Розділяйте моделі та контроллери
-  Моделі це обєкти бізнес логіки їх слід зберігати у паці models. Контроллери містять бізнес логіку роутів пака controllers.
-- Не збивайте роути однієї модделі в один файл.
-  створіть окрему папку `modelName` для кожної сутності та для кожної операції GET, POST, DELETE створюйте окремий файл. Наприклад файл `controllers/notifications/index.js` міг мати наступний вигляд.
- ```
-const fetchNotifications = require('./fetch-notifications');
-const updateNotification = require('./update-notification');
-const removeNotification = require('./remove-notification');
-/**
-* Provide Api for Investors (user with articles)
- **/
-
-module.exports = ({ config, db }) => {
-  api.get('/', authenticate, fetchNotifications({ config, db }));
-  api.put('/:notificationId',authenticate, updateNotification({ config, db }));
-  api.delete('/:notificationId', authenticate, removeNotification({ config, db }));
-  return api;
-};
+Перш за все потрібно розробити структуру вашого boilerplate. Це можна робити вручну створюючи кожен файл. Можна використати утиліти який в інтерненті є придестатньо та змінити його для сфоїх потреб. Ми підем другим шляхом і використаємо утиліту [express-generator](http://expressjs.com/uk/starter/generator.html). Отже приступимо до розробки boilerplate for API of forum-like application. 
+__Крок 1__ Генерація структури проекту
+Установіть express-generator та створіть дерикторію вашого проекту.
 ```
-
-- Документуйте ваші контроллери.
-- Виность додатковий код  у відповідні пакпки 'utils', 'helpers'
-
-#### Documentation
-Один з найважливіших елементів розробки rest api є його документація. Оскільки таким api можуть користуватися як інші розробники (front-end, movile developres), так і інші сервіси тому їм необхідно знати як з ним взаємодіяти. Тому дотримуйтеся наступних порад.
-- __Ввизначіть для чого це Api і хто ним буде користуватися.__
-Від цього залежить конкретний тип документації. Як що це внутрішнє api проекту тоді можна документувати ваші роути як у файлах README в середені вашого репозиторію, так і у самих фйлах `controllers/model/index.js`. Нижче наведено невеликий приклад документації.
+npm install express-generator -g
+express <your-project-name>
 ```
-/**
- Provide Api for Model
+Оскільки express-generator генерує структуру яка не зовсім задовільняє наші потреби її слід дещо змінити. Нище показано наглядний приклад того які зміни слід зробити. 
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig1.png?raw=true)
 
-  Model list  GET /api/v1/models
-  @header
-         Authorization: Bearer {token}
-  @optionalQueryParameters
-         param1 {String} - description
-         param2 {String} - description
-
-  Model create  POST /api/v1/models
-  @header
-         Authorization: Bearer {token}
-  @params
-         param1 {string}
-         param2 {boolean}
-**/
-```
-Якщо ж це api з яким будуть взаємодіяти інші сервіси, слід задуматися над створення повної, відсортованої та зручної у користуванні. Ось один приклад чудової документації [google calendar api](https://developers.google.com/google-apps/calendar/v3/reference/).
-
-- __Документуйте кожен свій rout.__
-  Який смисл в існуванні роута якщо про нього не знають інші. Якщо користувач вашого api не знатиме про існування того чи іншого роута він просто вирішить що у вас не має такого функціоналу. Тому документуй кожен свій роут.
-- __Документуйте роут у момент його створення__
- Не відкладайте на потім, щоб не забути про нього чи його параметри.
-
-
-## Обробка помилок
-У rest серрвера є набір загальноприйнятих [помилок](http://www.restpatterns.org/HTTP_Status_Codes), тому не варто вигадувати свої. Краще один раз написати свій обробник подій і використовувати його ніж кожному роуті займатися цим. У цьому може допомогти пакет [rest-api-errors](https://www.npmjs.com/package/rest-api-errors). Спершу слід написати загалтний обробник:
+Злівої сторони наведено boilerplate зшгенерований а з правої той який слід зробити. Давайте розглянемо структуру проекту детальніше
+ - `controllers` - тут слід зберігати всі ваші Api endpoints
+ - `models` - тут слід зберігати всі моделі даних 
+ - `api` -  тут знаходиться взаємодія ваших даних з вашими Api endpoint (детальніше нижче) 
+ - `utils` -  тут знаходиться весь допоміжний код додатку (відправка емейлів генерування pdf ets)
+ -  `middleware` -  тут знаходиться всі express middleware додатку
+ -  `mongo or db or <yourDatabaseName>` -  тут знаходиться уся робота з вашою бащою даних
+ -  `config or .env` -  усі налаштування вашого додатку краще зберігати в окремому файлі (це може бути як .js .json or .env)
+ 
+Дана структура дозволить вам зберігати ваш код в логічному порядку і дозволить швидко зорієнтуватися. своєрідним клеєм який дозволить звязати усі файли виступатими файл `app.js`
 
 ```
-const { APIError, InternalServerError, Unauthorized } = require('rest-api-errors');
+const express = require('express');
+
+const config = require('./config');
+// todo: uncoment when finished with ./src/api/index
+// const api = require('./src/api/index');
+const { mongoManager } = require('./src/mongo');
+
+const app = express();
+mongoManager.connect();
+
+// api routes v1
+app.use('/api/v1', api(config));
+
+module.exports = app;
+```
+Тепер для запуску вашого додатку достаттно інстаювати пакети `npm i` запустити `node ./bin`. Або дописати дану команту в npm script. 
+
+## Dealing with data
+> We're planning to show here the example of how you can get access to the data, using MongoDB.
+
+__Крок 2__ Оголошення моделей
+Кожне апі зазвичай працює з якимись даними. І наше майбутнє апі не авиключення. Нижче наведена приблизна структура бази даних для  forum-like application.
+
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig2.png?raw=true)
+
+Відповідно до цієї структури ми оголошуємо наші моделі. Оскільки для зберігання даних ми використовуємо [mongo](https://www.mongodb.com/) базу даних то побудуємо наші моделі за допомогою [mongoose](http://mongoosejs.com/docs/populate.html).
+
+Деректорія models виглядатиме наступним чином.
+
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig3.png?raw=true)
+
+- `schema.js` - це схема моделі детальніше [тут](http://mongoosejs.com/docs/schematypes.html)
+- `model.js` - це саме обєднання mongoose mмоделі та схеми. Це зроблено в окремих файлах тому що mongoose надає можливість розширяти ваші моделі різними методами і хуками. Тримати усе це + схема, яка сама по собі здатна розростатися чимало, призведе до того що ваш файл займатиме 500+ строчок. А це не дуже добре.
+```
+// models/answers/model.js
+const mongoose = require('mongoose');
+const { schema } = require('./schema');
+// add hooks here
+schema.pre('save', function() {
+  return doStuff().
+    then(() => doMoreStuff());
+});
+const Answer = mongoose.model('Answer', schema);
+module.exports = { Answer };
+```
+За аналогічною схнмою оголошуємо усі інші наші моделі та схеми для них.  
+## What about routes? 
+> Routes structuring. Organization, documentation, and description tips and tricks.
+
+__Крок 3__ Оголошення контроллерів
+Тепер перейдем до роутів або контроллерів. Контроллери також слід поділити у відповідності до ваших моделей так як зображено нижче.
+
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig4.png?raw=true)
+
+Таким чином у деректорії `controllers` кожна підерикторія представлятиме певну модель. Кожен файл відповідно представлятиме single Api endpoint.
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig5.png?raw=true)
+
+Такий підхід дозволить максимально розділити код вашого апі і уникнути безглуздого зберігання усіх Api endpoints в одному файлі. Ось як виглядатиме приклад реалізації  `GET /questions` та `GET /questions:_id` Api endpoints.
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig6.png?raw=true)
+
+Як можна було замітити у `./list.js` першим параметром приходить `Question`. Це mongooose модель з якою тепер можна просто працбювати. Також можна даний обєкт містить всі моделі у нашому апі. Таким чином  можна зручно використовувати любу модель в любому контроллері не імпортуючи її. Завдяки цьому код також виглядає компактніші і дозволяє уникнути помилок при імпортах. Як усе це реалізувати показано у наступному розділі.  
+
+## Routes and data together. How to not get lost
+__Крок 4__ Реєстрація моделей та контроллерів
+Ми розглянули як створити моделі та контроллери у нашому апі. також було показано як використовувати моделі в середені контроллера тепер слід розглянути як повязати моделі і контроллери разом. Усе відбувається у файлі `.src/api/index.js`.
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig7.png?raw=true)
+
+Тут відбувається три основні речі.
+1. Імпорт та реєстрація контроллерів.
+2. Імпорт комбінування моделей та передача їх у контроллери.
+3. Реєстрація обробника помилок, який перехвачуватиме помилки з усіх контроллерів (його реалізація показана в наступному розділі)
+
+Таким чином, по мірі розростання проекту, ви реєструєте нові моделі та контроллери в обному місці. А даний файл виконується в `app.js` як показано в на кроці 1.
+
+## Additional recommendations you can't omit
+__Крок 5__ Додатковий функціонал
+ - how to handle errors/bugs
+Обробляти усі помилки краще в одному місці вашого додатку. Оскільки це зручно коли вам аинекне необхідність щось змінити (додати логер, обробляти dev/profuction mode ets.). В нашому випадку таким місце являється './midlleware/error-handler.js'.
+```
+const { APIError, InternalServerError } = require('rest-api-errors');
 const { STATUS_CODES } = require('http');
-const winston = require('winston');
-module.exports = (err, req, res, next) => {
-  let error = err instanceof APIError ? err : new InternalServerError();
 
-  if(process.env.NODE_ENV !== 'production') {
-    winston.log('error', '-----> Unknown server error...');
-    winston.log('error', err);
+const errorHandler = (err, req, res, next) => {
+  const error = (err.status === 401 ||
+    err instanceof APIError) ? err : new InternalServerError();
+
+  if (process.env.NODE_ENV !== 'production') { 
+    // do something here
+  } 
+  if (['ValidationError', 'UserExistsError'].includes(err.name)) {
+    // if it special error
+    return res.status(405).json(err);
   }
-  res
+  // log error if needed 
+  // logger.info('API error', { error: err });
+
+  return res // return 500 for user
     .status(error.status || 500)
     .json({
       code: error.code || 500,
       message: error.message || STATUS_CODES[error.status],
     });
 };
+
+module.exports = { errorHandler };
 ```
+Оскільки ми зареєстрували даний обробник у `.src/api/index.js`  тепер достатньо викликати  `next(new Error())` у контроллері і дана помилка попада в наш обробник.
 
-та використати його в exoress
-```
-const errorHandler = require('./utils/error-handler');
-const app = express();
-app.use(errorHandler);
-```
+ - how to implement additional features for the app.
+ 
+Ще одне завдання яке стоїть перед розробником забезпечити максимально зручний запуск вашого проетку. Також було б добре мати так званий `hot-reload` вашого додатку. У  node js це можна реалізувати за допомогою [nodemon](https://nodemon.io/). 
+Ви можете написати простий npm script `nodemon --watch src --exec 'npm run start` чи sh script. Проте інколи виникає потреба запускати кілка процесів одночасно. Наприклад 1. запуск бази даних (mongo) 2. запуск api 3. запуск UI (react-script). Для таких цілей краще підходить [gulp](https://gulpjs.com/). Нижче наведений невеличкий приклад gulp файлу для запуску монго апі та react-script як єдиного проекту однією командою.
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig8.png?raw=true)
 
-Тепер у любому контроллері можна просто ініційовувати помилку
-```
-const { MethodNotAllowed } = require('rest-api-errors');
+Тепер достатньо створити npm script dev ` "./node_modules/.bin/gulp run:dev",` та просто запустити ваш проект `npm run dev`
+- advices
+  1. Завжди документуйте ваше апі 
+ Оскільки ваши апі користуватимуться інші розробники тому детальна документація кожного api point є життєво необхідною. Вона також убереже вас від багатьох питань типу 'А як мені дістади спимок ...', 'Яким чином мені змінити ...'  
+    2. Документуйте усі ваші `utils`
+  Оскільки ці речі використовуватимуться у всьому проекту і всіма розробниками добре мати невелиский опис того що робить ваша утиліта і невеликий приклад її використання
+    3. Тримайте Readme в належному стані
+ Тут варто описати якісь основні речі типу як запустити проект його структуру процес розробки і так далі для інших розробників. 
 
-api.use('/account', (req, res, next) => {
-....
-if(!user) {
-  throw new Unauthorized(401, 'Unauthorized');
- }
-});
-
-```
-
-### Permission checker
-Не рідко виникає необхідність обмежувати користувачів у певних діях. Наприклад менеджери можуть мати набагато більше прав ніж прості користувачі. Далі показано як написати пройти та компачтний permission checker ось такого вигляду.
-
-```
- import { hasPermissionTo, actions } from '../'
- api.use('/account', (req, res, next) => {
-     const user = getUser();
-     if (!hasPermissionTo(actions.GET_USER, user)) {
-        throw new MethodNotAllowed();
-     }
-});
-```
-
-> де взяти обєкт user це вже залежить від типу авторизації яку ви використали детальніше [тут](http://passportjs.org/docs).
-
-Спершу опишем усі доступні дії (їх можна буде доповнювати в майбутньому). `utils/permission-checker/constants.js`
-```
-module.exports = {
-  ALL_RIGHT: 'ALL_RIGHT',
-  GET_USER: 'GET_USER',
-};
-```
-Далі присвоїм ці дії конкретним користувачам `utils/permission-checker/permissions.js`.
-```
-const actions = require('./constants');
-module.exports = {
-  owner: [
-    actions.GET_USER,
-  ],
-  user: [],
-  admin: [
-    actions.ALL_RIGHT,
-  ],
-};
-```
-Далі створимо сам метод hasPermissionTo `utils/permission-checker/index.js`
-```
-const _ = require('lodash');
-const permissions = require('./permissions');
-const actions = require('./constants');
-
-const hasPermissionTo = (action, user) => {
-  const isRoleHasPermission = action => role => _.includes(permissions[role], action);
-  // get map user rolse into true false array
-  const userPermissions = user.roles.map(isRoleHasPermission(action));
-
-  if (!(userPermissions && _.includes(userPermissions, true))) {
-    return false
-  }
-
-  return true;
-};
-
-module.exports = {
-  hasPermissionTo,
-  actions,
-};
-```
-> В даному прикладі користувач має поле roles ['owner', 'user'], яке вказує до якої ролі він належить. І коли користувач входить до ролі owner яка має дозвіл GET_USER тоді hasPermissionTo верне true. Ви можете описати свою логіку метода hasPermissionTo.
-
-
-## Запити на клієнті
-Запити з клієнта можна оргпнізувати різними способами і за домомогою різних бібліотек. Але б хотілося дати кілька порад по органцізації цього процесу.
-
-- використовуйте розроблені бібіліотеки для цього такі як [axios](https://www.npmjs.com/package/axios)
-- зберігайте роути відділено від коду
-  Велика помилка прописувати шлях запиту в самому коді наприклад.
-```
-axios.get('api/v1/users', {
-    params: {}
-  })
-```
-Проблема такого підходу в тому що коли шось поміняється в Api буде тяжко шукати усі ці шляхи у коді. Краже написати певне сховиша для всіх шляхів і зберігати їх в одному місці `utils/api/urls.js`
-```
-export default {
-  USERS: '/api/v1/amazonS3/',
-};
-```
-Тереп можна використати цю константу одразу для 4 запитів
-```
-import ApiAdressses = from './utils/api/urls.js';
-axios.get(ApiAdressses.USERS);
-axios.post(ApiAdressses.USERS);
-axios.put(ApiAdressses.USERS);
-axios.delete(ApiAdressses.USERS);
-```
-- __напишіть допоміжний функціонал для взаємоді з api__
-
-Зазвичай більшість запитів крім даних містьть заголовки для авторизації, абож  qury параметри. І прописувати все це у вашому коді кожен раз не найкраща ідея.
-```
-axios({
-      url: `ApiAdressses.USERS?limit=${limit};soty${sort}`,
-      method: 'GET',
-      headers: {
-        'Authorization': 'Bearer token'
-     }
-    });
-
-//    or
-
-axios({
-      url: `ApiAdressses.USERS`,
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer token'
-        'Content-Type' : 'multipart/form-data'
-     }
-    });
-```
-
-Краще написати чотири методи використання яких виглядатиме наступним чином
-```
-import { get, post, put, remove, query, APIAddresses } from './utils/api';
-
-const response = await get(`APIAddresses.USERS${query({ limit, sort })}`);
-const response = await post(`APIAddresses.USERS`, formData);
-const response = await put(`APIAddresses.USERS/${userId}`, formData);
-const response = await remove(`APIAddresses.USERS/${userId}`);
-```
-
-Методи get, post, put, remove обгортки одного метода `makeRequest` створенне ні для зручності використання. Метод query формує стрічку query з вжідних параметрів.
-```
-import axios from 'axios';
-import APIAddresses from './urls';
-
-const makeRequest = async (type, url, data) => {
-  try {
-  const response =  await axios({
-      url,
-      data,
-      method: type,
-      headers:
-        'Authorization': getTokenHeaderValue(),
-        'Content-Type' : 'multipart/form-data'
-      }
-    });
-    return response;
-  } catch (error) {
-    if(process.env.NODE_ENV !== 'production') {
-      console.log(`Error: [${type}] - ${url}`);
-      console.log(error);
-    }
-    return error;
-  }
-};
-
-const get = url =>  makeRequest('get', url, null);
-const post = (url, data) => makeRequest('post', url, data);
-const put = (url, data) =>  makeRequest('put', url, data);
-const remove = url => makeRequest('delete', url, null);
-const query = data => `?${Object.keys(data).map(key => `${key}=${data[key]}`).join('&')}`;
-
-export { APIAddresses, get, post, put, remove, query, postFile };
-
-```
-> APIAddresses імпортований і експортований для зручності використання що імпортувати все з одного джерела
-
-Організувавши логіку запитів таким чином ви позбудетеся лишнього коду та покращете розуміння вашого коду для інших розробників. Також при зміні чи переході на нову версію api вам достатньо змінити шляхи  в одному файлі.
-
-# Підсумок
-
-Кожен проект може бути різним і у кожного свої потреби. Не завжди полуситться в ідеальному дотримуватися якигось шаблонів, проте старайтеся дотримуватися порад поданій у цій статті.
-
-- Дотримутесф логіки rest
-- Організуйте ваше api (роути, обробку подійб права доступу)
-- Докумнтуйте ваше api
-- Організуйте ваші запити для уникнення дублюваннякоду.
-
-Організація вашоко rest api скорить час розробки, покращить розуміння іншими розробниками того що ви робити та значно спростить супровід.
+## Sumarry
+Отже в данній статті я коротко показав як можна з нуля створити boilerplate for forum-like application based on express. Вона є дещо загальною і підхоить як основа для любого express application. Проте вона не строгим правилом а лиш рекомендаціями для покращення структури вашого апі. Звісно кожен проект вимагатиме певних змін в залежності від його специфіки і це нормально.  
