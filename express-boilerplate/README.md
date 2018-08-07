@@ -3,16 +3,13 @@
 В даній статті я хотів поділитися тим як в кілька кроків настроїти boilerplate для API невеличкого forum-like application based on express
 
 ## API for the forum-like application. Where should I begin?
-> This part refers to the preparation processes and where a developer should start when building a forum-like app.
-
 Перш за все слід обдумати функціональні вимоги поставленні перед вашим додатком. В залежності від них структура може мінятися. Наприклад чи потрібний у вашому додатку механізм авторизації чинію. Чи буде шттеграція із іншими сервісами чи ні. Всі інші додаткові функціональні вимоги типу генерації звітів (pdf, xml, csv) відправка емейлів тощо.
 
 - функціональні вимоги вашого додатку
 - дані якими він оперуватими 
 - методи розробки
-## Can boilerplate be perfect?  
-> We plan to unveil here code organization and folders structuring best practices. Tips (based on personal experience) with examples which others might find useful.
 
+## Can boilerplate be perfect?  
 Перш за все потрібно розробити структуру вашого boilerplate. Це можна робити вручну створюючи кожен файл. Можна використати утиліти який в інтерненті є придестатньо та змінити його для сфоїх потреб. Ми підем другим шляхом і використаємо утиліту [express-generator](http://expressjs.com/uk/starter/generator.html). Отже приступимо до розробки boilerplate for API of forum-like application. 
 __Крок 1__ Генерація структури проекту
 Установіть express-generator та створіть дерикторію вашого проекту.
@@ -53,8 +50,6 @@ module.exports = app;
 Тепер для запуску вашого додатку достаттно інстаювати пакети `npm i` запустити `node ./bin`. Або дописати дану команту в npm script. 
 
 ## Dealing with data
-> We're planning to show here the example of how you can get access to the data, using MongoDB.
-
 __Крок 2__ Оголошення моделей
 Кожне апі зазвичай працює з якимись даними. І наше майбутнє апі не авиключення. Нижче наведена приблизна структура бази даних для  forum-like application.
 
@@ -81,9 +76,7 @@ const Answer = mongoose.model('Answer', schema);
 module.exports = { Answer };
 ```
 За аналогічною схнмою оголошуємо усі інші наші моделі та схеми для них.  
-## What about routes? 
-> Routes structuring. Organization, documentation, and description tips and tricks.
-
+## What about routes?
 __Крок 3__ Оголошення контроллерів
 Тепер перейдем до роутів або контроллерів. Контроллери також слід поділити у відповідності до ваших моделей так як зображено нижче.
 
@@ -147,7 +140,7 @@ module.exports = { errorHandler };
  
 Ще одне завдання яке стоїть перед розробником забезпечити максимально зручний запуск вашого проетку. Також було б добре мати так званий `hot-reload` вашого додатку. У  node js це можна реалізувати за допомогою [nodemon](https://nodemon.io/). 
 Ви можете написати простий npm script `nodemon --watch src --exec 'npm run start` чи sh script. Проте інколи виникає потреба запускати кілка процесів одночасно. Наприклад 1. запуск бази даних (mongo) 2. запуск api 3. запуск UI (react-script). Для таких цілей краще підходить [gulp](https://gulpjs.com/). Нижче наведений невеличкий приклад gulp файлу для запуску монго апі та react-script як єдиного проекту однією командою.
-![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig8.png?raw=true)
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig7.png?raw=true)
 
 Тепер достатньо створити npm script dev ` "./node_modules/.bin/gulp run:dev",` та просто запустити ваш проект `npm run dev`
 - advices
