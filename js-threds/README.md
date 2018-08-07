@@ -2,5 +2,5 @@
 
 ##coming soon...
 
-![](https://github.com/VolodymyrTymets/articles/blob/js-threads/js-threads/img/single-thread.gif?raw=true)
-![](https://github.com/VolodymyrTymets/articles/blob/js-threads/js-threads/img/threads.gif?raw=true)
+![](https://github.com/VolodymyrTymets/articles/blob/master/js-threds/img/single-thread.gif?raw=true)
+![](https://github.com/VolodymyrTymets/articles/blob/master/js-threds/img/threads.gif?raw=true)
