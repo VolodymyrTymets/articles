@@ -31,8 +31,8 @@ Node js розроблявся як однопоточний асинхронн�
 Нижче наведений код реалізації даного алгоритму. Повний код доступний у [репозиторії](https://github.com/VolodymyrTymets/js-threads)
 ```
 const decodeFiles = async (inFolder, outFolder) => {
-   // 1 read all file inside of in folder
-  const files = await getFilesInFolder(inFolder);
+	// 1 read all file inside of in folder
+	const files = await getFilesInFolder(inFolder);
 	for(let i=0; i < files.length; i++) {
 		// 2 decode .wav to float array and get spectrum by fff
 		decode(files[i].filePath).then(audioData => {
@@ -57,6 +57,7 @@ decodeFiles(path.resolve(__dirname, './assets/in'), path.resolve(__dirname, './a
 - скористатися класом [Worker Threads](https://nodejs.org/api/worker_threads.html) (__!!! experimental for now__)
 
 ### child_process
+Використовуючи [child_process](https://nodejs.org/api/child_process.html) ми можете запускати додаткові скріпти чи інші  js фали як окремі потоки. Ваш основний потік може читати файли а додаткрвий скріпт виконуватиме усі інші операції над ними. Даний підхід мені не дуже сподобався адже це виглядає так ніби ви запускаєте кілька окремих програм. Тому я не став його реалізовувати проту ви можете почитати детальніше [тут](https://medium.freecodecamp.org/node-js-child-processes-everything-you-need-to-know-e69498fe970a)
 
 ### npm threads
 Щоб запускати обробку одного фалу у окремому потоці я скористався пакетом [threads](https://www.npmjs.com/package/threads). Він дозволяє запускати js код в окремому пакеті та передавати дані у із основного потоку. Одже наш алгоритм міг би виглядати наступним чином:
@@ -174,12 +175,69 @@ decodeFiles(path.resolve(__dirname, './assets/in'), path.resolve(__dirname, './a
 
 ### Worker Threads
 Щоб реалізувати даний алгоритм за допомогою класу [Worker Threads](https://nodejs.org/api/worker_threads.html) слід зауважити що це експерементальний клас і використовувати його в реальних проектах не рекомендовано. Також преконайтеся що у вас версія ноди `v10.8.0` і ви запускаєте ваш код `node ----experimental-worker <you-js-file-path>`.
+Реалізаія даного алгоритму схожа із попереднім але дещо простіша. Спершу ствворюємо `./src/utils/node.v10.8.0-fft-thread-worker.js`js фай з кодом яким запускатимемо у child thread. 
 
+```
+const {
+	isMainThread, parentPort, workerData
+} = require('worker_threads');
 
+const { decode } = require('./decoder');
+const { fft, spliceSpectrum } = require('./fft');
+const { filePath, fileName } = workerData; // get data from main thread
 
+decode(filePath).then(audioData => {
+	const wave = audioData.channelData[0];
+	const { spectrum } = fft(wave);
+	const { splicedSpectrum } = spliceSpectrum(spectrum);
+	console.log(`[${filePath}] processed`);
+	// send data for parent thread
+	parentPort.postMessage({ fileName, filePath, splicedSpectrum });
+});
 
+```
 
+Тут усе доволі просто імпортуємо `workerData` дані передані із головного потоку та  `parentPort` щоб відправити результат виконання основному потоку. Також існує додаткова константа `isMainThread` назва говорить сама за себе.
 
+Тепер даний файл можна використати у класі  Worker Threads. Реалізація нашого алгоритму за допомогою Worker Threads виглядатиме наступним чином:
+```
+const {
+	Worker, isMainThread, parentPort, workerData
+} = require('worker_threads');
+const path = require('path');
+const { getFilesInFolder } = require('./src/utils/file-reader');
+const { writeToFile } = require('./src/utils/file-writer');
 
+const decodeFiles = async (inFolder, outFolder) => {
+	console.time('executing time');
+	// 1 read all file inside of in folder
+	const files = await getFilesInFolder(inFolder);
 
+	const results = await Promise.all(files.map(({ filePath, fileName }) =>
+		new Promise((resolve, reject) => {
+			const worker = new Worker(path.resolve(__dirname, './src/utils/node.v10.8.0-fft-thread-worker.js'), {
+				workerData: { filePath, fileName }
+			});
+			worker.on('message', resolve);
+			worker.on('error', reject);
+			worker.on('exit', (code) => {
+				if (code !== 0)
+					reject(new Error(`Worker stopped with exit code ${code}`));
+			});
+		})
+	));
 
+	results.forEach(({ fileName, filePath, splicedSpectrum }) => {
+		// 4 write result ito out folder
+		writeToFile(outFolder, fileName, splicedSpectrum);
+	});
+
+	console.timeEnd('executing time');
+};
+
+decodeFiles(path.resolve(__dirname, './assets/in'), path.resolve(__dirname, './assets/out'));
+```
+Можна також напистати додатковий клас як це вказувалося вище але я вже цього робити не став.
+
+# Summary
+У даній статті я взяв типову і поширину задачу та показав як можна її розпаралелити. Ви можете викоритовувати любий із способі і писати дійсно складні програми. Проте не забувайте про одну річ для створення окремого потоку процесору також потрібно затрачати час. Тому якщо ваша задача не вимагає значних затрат процесора то її розпаралеллення призведе тільки до уповільнення вашої програми. Потоки це теж всього лиш інстумент використовуйте їх розумно. 
