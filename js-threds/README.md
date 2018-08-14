@@ -7,7 +7,7 @@ Node js розроблявся як однопоточний асинхронн�
 > Just because Node is designed without threads, doesn't mean you cannot take advantage of multiple cores in your environment. Child processes can be spawned by using our child_process.fork() API, and are designed to be easy to communicate with. Built upon that same interface is the cluster module, which allows you to share sockets between processes to enable load balancing over your cores.
 ##  Постановка задачі
 
-Не так давно мені прийшлося реалізовувати невеличкий алгоритм генерування сигналів із виликою частотою. Основна задача якого полягала у генерування цих сигналів кожні n мікросекунд. Цоб це реалізувати я використовав пакет [sleep](https://www.npmjs.com/package/sleep) і наткнувся на певну проблему. Основний потік зависав під час роботи алгоритму і UI замерзав. Прийшлося використовувати потоки щоб запускати даний алоритм у окремому потоці. Таким чином проблема була вирішенна.
+Не так давно мені прийшлося реалізовувати невеличкий алгоритм. Під час його виконання всі інші частини програми просто зависали. Оптимізувати його було неможливо. Тому єдиним виходом був розпаралелення програми.
 
 Після чого я подумав в яких типових задачах можна застосувати даний підхід. на думку прийшла робота із файлами. Тому я вирішив написати цю статтю взявши за основу невеличкий алгоритм, показавши його роботу в одному та декількох потоках.
 
@@ -22,4 +22,164 @@ Node js розроблявся як однопоточний асинхронн�
 Обробка файлі в  кількох потоках
 ![](https://github.com/VolodymyrTymets/articles/blob/master/js-threds/img/threads.gif?raw=true)
 
-## Реалізація 
+## Реалізація в одному потоці 
+Для реалізації даного алгоритму слід зробити три основні кроки.
+1. Прочитати всі файли у нашій деректорії
+2. Зробити над ними певну операції (декодування, пошук спектру)
+3. Записати результат виконання (у файл, базу даних і так далі)
+
+Нижче наведений код реалізації даного алгоритму. Повний код доступний у [репозиторії](https://github.com/VolodymyrTymets/js-threads)
+```
+const decodeFiles = async (inFolder, outFolder) => {
+   // 1 read all file inside of in folder
+  const files = await getFilesInFolder(inFolder);
+	for(let i=0; i < files.length; i++) {
+		// 2 decode .wav to float array and get spectrum by fff
+		decode(files[i].filePath).then(audioData => {
+			const { spectrum } = fft(audioData.channelData[0]);
+			const { splicedSpectrum } = spliceSpectrum(spectrum);
+
+			// 3 write result ito out folder
+			writeToFile(outFolder, files[i].fileName, splicedSpectrum);
+		});
+	}
+};
+
+decodeFiles(path.resolve(__dirname, './assets/in'), path.resolve(__dirname, './assets/out'));
+```
+
+При такому підході алгоритм оброблятиме файли послідовно. Кожен наступний файл чекатиме поки виконається попередній. Якщо обробка одного файлу займатиме багато часу то загалтний час виконання буде зростати із збільшенням файлів в дереикторії. Рішенням може стати запускати обробку кожного файлу в окремому потоці. 
+
+##  Реалізація в кількох потоках
+Що реалізувати обробку файлу у окремому потоці ви можете зробити це трьома шляхами:
+- запустити ваш код оброьки в окремому потоці за допомогою  [child_process](https://nodejs.org/api/child_process.html#child_process_child_process)
+- скористатися пакетами для роботи із потоками із середовища [npm](https://www.npmjs.com/)
+- скористатися класом [Worker Threads](https://nodejs.org/api/worker_threads.html) (__!!! experimental for now__)
+
+### child_process
+
+### npm threads
+Щоб запускати обробку одного фалу у окремому потоці я скористався пакетом [threads](https://www.npmjs.com/package/threads). Він дозволяє запускати js код в окремому пакеті та передавати дані у із основного потоку. Одже наш алгоритм міг би виглядати наступним чином:
+```
+const spawn = require('threads').spawn;
+const { decode } = require('./src/utils/decoder');
+const { fft, spliceSpectrum } = require('./src/utils/fft');
+
+const decodeFiles = async (inFolder, outFolder) => {
+	// 1 read all file inside of in folder
+	const files = await getFilesInFolder(inFolder);
+	
+	for (let i = 0; i < files.length; i++) {
+		const thread = spawn(function (input, done) {
+			// code will be run in separate threads
+			const { filePath } = input; // get data from main thread
+			
+			// 2 decode .wav to float array and get spectrum by fff
+			decode(filePath).then(audioData => {
+				const { spectrum } = fft(audioData.channelData[0]);
+				const { splicedSpectrum } = spliceSpectrum(spectrum);
+
+				// 3 write result ito out folder
+				writeToFile(outFolder, files[i].fileName, splicedSpectrum);
+				done({ success: true });
+			});
+		});
+
+		thread
+			.send({ filePath: files[i].filePath }) // send data to child thread
+			.on('message', function (response) { // get response from child thread
+				const { success } = response; // get data from child thread
+				thread.kill();
+			})
+	}
+};
+
+```
+Правда тут виникла ожна проблема яку прийшлося виршувати. Ви не можете передати у child thread [функцію](https://github.com/andywer/threads.js/issues/77) із основного потока. Також ви не можете викликати 'require('../some-code');' в child thread.  Отже ваш виклик медоту `decode, fft, spliceSpectrum` просто викличуть `is not a function`.  Тобто усю реалізацію методів `decode, fft, spliceSpectrum` слід писати в середені `spawn(function(input, done) {...`. А це є не найкращим архітектурним рішення.
+На щастя у дочірньому потоці можна викликати npm modules. Отдже можна написати локальний пакет який ечкспортуватиме вищезазначені методи для виконання у child thread і спокійно їх використовувати. Розмістимо це пакет в деректорії `./modules/fft-thread-woket`. Та ініціалізуєм пакет командою `npm init`. Після чого в основній репозиторії `npm i --save ./modules/fft-thread-woket`. Тепер даний пакет можна використовувати наступним чинов: 
+```
+
+const thread = spawn(function (input, done) {
+    // get all code from localpackage
+	const { calculateWavSpectrum } = require('fft-thread-worker');
+	calculateWavSpectrum(input.filePath, done);
+	...
+})
+...
+```
+Весь код локального пакету доступний [тут](https://github.com/VolodymyrTymets/js-threads/tree/master/modules/fft-thread-worker).
+
+Тепер уже виглядає краще. Але використовувати усю цю громізтку структуру в основному коді теж не хотілосяю краще написати Promise чи певний class helper який би брав на себе вю роботу із потоками на себе. Приблизно так це можна реалізувати: 
+
+```
+const spawn = require('threads').spawn;
+class FFTThreadWorker {
+	constructor(payload) {
+		this.start = this.start.bind(this);
+		this.log = this.log.bind(this);
+		this._payload = payload;
+	}
+
+	log(message) {
+		// console.log(`-> [FFTThreadWorker]: ${message.message || message}`);
+	}
+
+	start(filePath) {
+		return new Promise((resolve, reject) => {
+			const thread = spawn(function (input, done) {
+				const { calculateWavSpectrum } = require('fft-thread-worker');
+				calculateWavSpectrum(input.filePath, done);
+			})
+				.send({ filePath })
+				.on('message', (response) => {
+					thread.kill();
+					resolve({ payload: this._payload, response });
+				})
+				.on('error', reject)
+				.on('exit', () => this.log('stopped!'));
+		})
+	}
+}
+
+module.exports = { FFTThreadWorker };
+```
+Тепер даний код можна просто і лехко використовувати у нащому основному коді використовуючи прості `async/await` or `then/catch`. Тепеп фінальний вигляд реалізації алгоритму файлі за допомогою потоків виглядатиме наступним чином. Повний код можна найти [тут](https://github.com/VolodymyrTymets/js-threads/blob/master/run-threads.js)
+
+```
+const path = require('path')
+const { getFilesInFolder } = require('./src/utils/file-reader');
+const { FFTThreadWorker } = require('./src/FFT');
+const { writeToFile } = require('./src/utils/file-writer');
+
+const decodeFiles = async (inFolder, outFolder) => {
+	// 1 read all file inside of in folder
+	const files = await getFilesInFolder(inFolder);
+
+	const results = await Promise.all(
+		// 2 decode .wav to float array and get spectrum by fff
+		files.map(({ filePath, fileName }) =>
+			new FFTThreadWorker({ fileName, filePath }).start(filePath)));
+
+	results.forEach(({
+		 payload: { fileName, filePath  },
+		 response: { splicedSpectrum }
+	}) => {
+		// 3 write result ito out folder
+		writeToFile(outFolder, fileName, splicedSpectrum);
+	});
+};
+
+decodeFiles(path.resolve(__dirname, './assets/in'), path.resolve(__dirname, './assets/out'));
+```
+
+### Worker Threads
+Щоб реалізувати даний алгоритм за допомогою класу [Worker Threads](https://nodejs.org/api/worker_threads.html) слід зауважити що це експерементальний клас і використовувати його в реальних проектах не рекомендовано. Також преконайтеся що у вас версія ноди `v10.8.0` і ви запускаєте ваш код `node ----experimental-worker <you-js-file-path>`.
+
+
+
+
+
+
+
+
+
