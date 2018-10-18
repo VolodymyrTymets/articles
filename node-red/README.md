@@ -17,16 +17,90 @@
 1. Вибір зображення із каталогу
 2. Редагування зображення переп відправкою
 3. Розсилка картинок.
-
+![](https://github.com/VolodymyrTymets/articles/blob/master/node-red/img/moc.png?raw=true)
 
 >> ??
 
 ## Вирішення
 
 >> ?
-### Настройка Boilerplate
+### Настройка React Boilerplate wiht Node js
+Оскільки нові палети в node red [підключаються](https://nodered.org/docs/creating-nodes/first-node) як npm пакети є два вибори. Реєструвати кожен палет як окремий пакет або ж реєструвати набір палетів як один пакет. Це залежить від того розробляєте ви комплекс із кількох палетів чи один окремий. Другий випадо на мою думку більш типовий і я вирішив взяти за основу його. Тому розробив приблизну структруру проекту:
 
-### Настройка pallets
-### Особливості UI в  Node Red
-### ?
-### Серверна частина
+```
+|_ pallets <- place whree all node-red pallets saved
+    |_ <categoryName>-<palletName> <- pallet folder
+        |_ icons <- icon of pallet
+        |_ ui 
+           |_ index.js <- register component for pallets
+           |_ build/main.js <- builded pallet teplate code
+        |_ <categoryName>-<palletName>.html
+        |_ <categoryName>-<palletName>.js 
+|_ src
+   |_ client/containers <- react components here (paller ui templates)
+   |_ server <- all server code here
+     |_ pallete-managers <- all code to manage server side of pallet
+        |_ <palletName> 
+   |_ utils <- code to use on client and server
+|_ test
+   |_ unit
+```
+> Повний код проекту доступний [тут](https://github.com/VolodymyrTymets/node-red-react-example)
+
+Отже тепер можна приступати до написання нашого проекту. Будемо слідувати крокок за кроком і детально роглядати кожен з них.
+
+
+### Створення першого mode red pallet
+Перш за все потрібно ініціалізувати ваш репозиторі `npm init`. Далі необхідно оприділитися із назвами палетів. Оскільки ваші палети можуть використуваватися із іншими не варто називати їх просто `Cropper`. Краще придумати неймспейс яки обєднюватиме ваші палете. В мому випадку `Apiko`. Тепер наш палет називатиметься `apiko-image-cropper`.
+Згідно [туторіал](https://nodered.org/docs/creating-nodes/first-node) кожен палет повинен містити: 
+- `package.json`
+- `lower-case.js`
+- `lower-case.html`
+
+`package.json` - у нас уже є тепер лишилося створити 
+- `pallets/apiko-image-cropper/apiko-image-cropper.js` <- server side code
+- `pallets/apiko-image-cropper/apiko-image-cropper.html` <- Ui or client side code
+
+Після чого зареєструємо на палет для node-red в `package.json`
+```
+// package.json
+{
+    "name" : "node-red-contrib-react-example",
+    ...
+    "node-red" : {
+        "nodes": {
+            "apiko-image-cropper":"/pallets/apiko-image-cropper/apiko-image-cropper.js",
+        }
+    }
+}
+```
+`apiko-image-cropper.js` - цей фал node red використовуватиме для реєстрації вашого палету та для обробки серверної поведінки. Тут нас чікавить тіки `node.on('input', () => ...` callback який викликатиметься тоді коли нам прийдуть дані із попередніх палетів. Детальніше [тут](https://nodered.org/docs/creating-nodes/node-js). 
+```
+// /pallets/apiko-image-cropper/apiko-image-cropper.js
+const  MODULE_NAME = 'apiko-image-cropper';
+
+module.exports = function(RED) {
+  'use strict';
+  function nodeGo(config) {
+    RED.nodes.createNode(this, config);
+    const node = this;
+    node.on('input', (msg) => {
+        msg.payload = { newData: {  } }; // extend payload for next pallet
+        this.send(msg)
+    });
+  }
+
+  RED.nodes.registerType(MODULE_NAME, nodeGo);
+};
+```
+### Реєстрація палету в node red
+
+### Node Red Server Side more professional
+### Add React for UI
+#### Create our Component
+#### Build React
+#### Add Build react for node red
+#### Add reat time update
+
+# conclusion
+
