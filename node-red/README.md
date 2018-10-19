@@ -140,6 +140,7 @@ module.exports = { ImageCropperPalletManager };
 ```
 Тепер просто зареєструєм наш клас у  `apiko-image-cropper.js`.
 ```
+// /pallets/apiko-image-cropper/apiko-image-cropper.js
 const { ImageCropperPalletManager } = require('../../src/server/pallet-managers/image-cropper');
 
 module.exports = function(RED) {
