@@ -1,4 +1,4 @@
-## Node-red how start to build your own pallets with dinamic ui with React.
+# Node-red how start to build your own pallets with dinamic ui with React.
 Не так давно я мав можливість ознайомитися із доволі новою технологією розробки програмних продуктів на Node js - Node Red. Якщо коротко то це технологія яка дозволяє зьирати вашу прогруму із готових частин  так званних pallets як конструктор. Із їхнього сайту. 
 > Node-RED is a programming tool for wiring together hardware devices, APIs and online services in new and interesting ways.
 > It provides a browser-based editor that makes it easy to wire together flows using the wide range of nodes in the palette that can be deployed to its runtime in a single-click.
@@ -25,7 +25,7 @@
 >> ?
 
 ![](https://github.com/VolodymyrTymets/articles/blob/master/node-red/img/node-red-res.gif?raw=true)
-### Настройка React Boilerplate wiht Node js
+## Настройка React Boilerplate wiht Node js
 Оскільки нові палети в node red [підключаються](https://nodered.org/docs/creating-nodes/first-node) як npm пакети є два вибори. Реєструвати кожен палет як окремий пакет або ж реєструвати набір палетів як один пакет. Це залежить від того розробляєте ви комплекс із кількох палетів чи один окремий. Другий випадо на мою думку більш типовий і я вирішив взяти за основу його. Тому розробив приблизну структруру проекту:
 
 ```
@@ -51,7 +51,7 @@
 Отже тепер можна приступати до написання нашого проекту. Будемо слідувати крокок за кроком і детально роглядати кожен з них.
 
 
-### Створення першого mode red pallet
+## Створення першого mode red pallet
 Перш за все потрібно ініціалізувати ваш репозиторі `npm init`. Далі необхідно оприділитися із назвами палетів. Оскільки ваші палети можуть використуваватися із іншими не варто називати їх просто `Cropper`. Краще придумати неймспейс яки обєднюватиме ваші палете. В мому випадку `Apiko`. Тепер наш палет називатиметься `apiko-image-cropper`.
 Згідно [туторіал](https://nodered.org/docs/creating-nodes/first-node) кожен палет повинен містити: 
 - `package.json`
@@ -106,7 +106,7 @@ module.exports = function(RED) {
 - 7 - Контент який відображатиместь в UI
 > у пункті 7 міститься простий `<div >` його ми використаємо для react в майбутньому поки можна просто додати `<p>hellow world</p>`
 
-### Реєстрація палету в node red
+## Реєстрація палету в node red
 Тепер коли ми створили наш перший палет можна додати його в node red і запустити його. Перш за все слід [встановити node red](https://nodered.org/docs/getting-started/). Далі слід підключити ваш [пакет локально](https://nodered.org/docs/getting-started/adding-nodes).
 ```
 cd $HOME/.node-red
@@ -115,7 +115,7 @@ npm install <npm-package-name>
 > node red зберігає всі свої файли в .node-red дерикторії. Ви можете переглянути .node-red/pacakge.json і моніторити усі пакети (палети) які ви підключаєте
 
 І тепер все що нам залишилося це запустити `node-red` і перевірити чи усе працює.
-### Node Red Server Side more professional
+## Node Red Server Side more professional
 Однією з речей що мені не сподобалася в node-red це те що вся обробка інформації від попередніх палетів відбувається в одному .js файлі а конкретно в методі `node.on('input',`. Якщо це кілька строк коду то це нормально. проте якщо вам прийдеться писати якусь складну логіку зберігати це все діло в одному файлі не бажано. На щастя усе це запускається під node js і можна перенесту нашу логіку в кись обробник.
 
 Отже в дерикторії `src/server/pallet-managers` зберігатиметься логіка обробки сереверного коду наших палетів. Отже створимо клас `ImageCropperPalletManager` для нашого палету `apiko-image-cropper` який імплементитеме один обовязковий метод `onInput`. Усе решта це ваша додаткова логіка.
@@ -162,7 +162,7 @@ module.exports = function(RED) {
 Тепер можна працювати як із любим іншим node проектом. Ми відділили логіку node red від бізнес логіки.
 Ще один нюанс на який би хотілося звернути увагу це [стату палету](https://nodered.org/docs/creating-nodes/status) під час виконання яким можна управляти. Досить викликати `this.status({ fill:"red", shape:"dot", text: "some error"});` щоб показати помилка в UI під час виконання. Це досить коорисно коли слід показати якись процес який займає певний час чи для відображення якигось помилок виконання.
 
-### Add React for UI
+## Add React for UI
 Інша річ яка мене розчарувала це те що у всіх прикладах node red пропонує нам використовувати html + jq. Якщо нам потрібно просто розробити просту форму для вводу даних тоді цього думаю достатньо. Але ж у нашуму випадку це вже не проста форма. Нам слід показати список картинок у зрочному представленні і додати можливість обрізаці вибрану картінку. За допомогою React це можна реалізувати за допомогою двох пакетів:
 - [react-photo-gallery](https://www.npmjs.com/package/react-photo-gallery);
 - [react-image-crop](https://www.npmjs.com/package/react-image-crop)
@@ -225,7 +225,7 @@ const ImageCropper = ({ node, src, crop, onSelectFile, onImageLoaded, onCropComp
 export default ImageCropper;
 ```
 Я упустив деякі деталі щоб не розтянувати данну статтю. Усе вище згадане це простий Ract + Recompose. Думаю на цьому не варто зупинятися. Повний код доступний [here](https://github.com/VolodymyrTymets/node-red-react-example/tree/master/src/client/containers/ImageCropper)
-> ?? `window.Apiko.constants.lastSelectedUrl.value`
+> ?? `window.Apiko.constants.lastSelectedUrl.value`  id="node-input-cropX"
 
 #### Build React
 Ну щож тепер у нас є наші React components. Як же нам їх помістити в наш node-red pallet? У файлі `/pallets/apiko-image-cropper/apiko-image-cropper.html` у нас є елемент ` <div id="apiko-image-cropper">` Відповідно в нього нам слід і рендерити наш компонент.  Отже створимо новий файл і `/pallets/apiko-image-cropper/ui/index.js` який просто hєструє наш компонет. 
@@ -241,7 +241,7 @@ const onImageCropper = (node) =>
 2. Слід виконати виконуваний фал під час відображення нашого палету
 
 Усе по порядку.
-1. React build
+##### 1. React build
  Ну тут на допомого прийде старий добрий [webpack](https://webpack.js.org/). Весь конфіг доступний [here](https://github.com/VolodymyrTymets/node-red-react-example/blob/master/webpack.config.js). Єдини на що я б звернув увагу це: 
 ```
  const { PALLET_NAME } = process.env;
@@ -252,7 +252,7 @@ const onImageCropper = (node) =>
 ```
 Тепер можна викликати команду `PALLET_NAME=apiko-image-cropper webpack --mode development`. Це потрбіно для того щоб не копіювати файл в репозиторі. Але ви можете збілдити і скопіювати в ручну у дерикторі `./pallets/apiko-image-cropper/ui/build`.
 
-2.Api endpoint
+##### 2.Api endpoint
 Тепер слід якимось чином віддати наш виконуваний файл з сервера. На щасття node red надає можливітсть описувати свої [api points](https://nodered.org/docs/api/runtime/api) У файлі `apiko-image-cropper.js`: 
 ```
 // /pallets/apiko-image-cropper/apiko-image-cropper.js
@@ -273,7 +273,7 @@ module.exports = function(RED) {
 ```
 Отже ми зареєстрували новий api point `/apiko-image-cropper/js/` тепер по запиту GET `/apiko-image-cropper/js/main.js` на код шукатиме файл `main.js` у `pallets/apiko-image-cropper/ui/build/main.js`. Тепер залишилося тільки викликати наш запит з клієнта. 
 
-3. Виклик main.js from server 
+##### 3. Виклик main.js from server 
 
 Node red надає нам два [калбеки](https://nodered.org/docs/creating-nodes/node-html) які ми можемо викристати для цих цілей.  `oneditprepare` - called when the edit dialog is being built (кожен раз коли ми відкриваємо вікно) та `onpaletteadd` - alled when the node type is added to the palette. Тому у фалі `apiko-image-cropper.js`: 
 ```
@@ -293,7 +293,7 @@ Node red надає нам два [калбеки](https://nodered.org/docs/crea
 
 Отже тепер нам лишилося запустити наш node red і перевірити чи відрендирився наш компонент. 
 
-#### Add reat time update
+#### Add real time update
 Осатннє що б хотілося показати як додати real time update у подібний проект. 
 Перше з чим я стикнувся що мені слід білдити не один палет а кілька. Ми ж розробляли два палети `imageCropper` та `imageGallery`. Тому мені кожен раз би приходилося запускати два скріпти `PALLET_NAME=apiko-image-cropper webpack --mode development && PALLET_NAME=apiko-image-gallery webpack --mode development`. Я пішов лекшим шляхом і нписав невеличкий скріпт `build.sh`.
 ```
@@ -315,5 +315,5 @@ done
   "start": "nodemon --watch pallets --watch src/client --exec 'npm run build-all'"
 ```
 Ну і звичайно вам ще треба буде запустити `node-red`.
-# conclusion
+## conclusion
 
