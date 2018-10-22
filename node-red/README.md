@@ -22,30 +22,34 @@
 Досить проста задача але як для прикладу більшої і не потрібно. 
 
 ## Вирішення
->> ?
+Провівши буквально декілька годин за розробкоюможна побудувати досить непоганий UI для такої задачі. Використовуючи node red можна значно скоротити цас розробки подібних задач. Адже node-red надає нам більшу частину функціоналу. Нижче наведено приклад додакку на який у мене пішло буквально пів дня.
 
 ![](https://github.com/VolodymyrTymets/articles/blob/master/node-red/img/node-red-res.gif?raw=true)
+Далі розглянемо покроково як настроїти і розробити даний проект використовуючи node-red + React.
+
 ## Настройка React Boilerplate wiht Node js
 Оскільки нові палети в node red [підключаються](https://nodered.org/docs/creating-nodes/first-node) як npm пакети є два вибори. Реєструвати кожен палет як окремий пакет або ж реєструвати набір палетів як один пакет. Це залежить від того розробляєте ви комплекс із кількох палетів чи один окремий. Другий випадо на мою думку більш типовий і я вирішив взяти за основу його. Тому розробив приблизну структруру проекту:
 
 ```
-|_ pallets <- place whree all node-red pallets saved
-    |_ <categoryName>-<palletName> <- pallet folder
-        |_ icons <- icon of pallet
+|_ pallets 
+    |_ <categoryName>-<palletName> 
+        |_ icons
         |_ ui 
-           |_ index.js <- register component for pallets
-           |_ build/main.js <- builded pallet teplate code
+           |_ index.js
+           |_ build/main.js
         |_ <categoryName>-<palletName>.html
         |_ <categoryName>-<palletName>.js 
 |_ src
-   |_ client/containers <- react components here (paller ui templates)
-   |_ server <- all server code here
-     |_ pallete-managers <- all code to manage server side of pallet
+   |_ client/containers 
+   |_ server 
+     |_ pallete-managers 
         |_ <palletName> 
-   |_ utils <- code to use on client and server
+   |_ utils
 |_ test
    |_ unit
 ```
+Нижче наведено пояснення до дерикторій та файлів проекту:
+![](https://github.com/VolodymyrTymets/articles/blob/master/node-red/img/fig2.png?raw=true)
 > Повний код проекту доступний [тут](https://github.com/VolodymyrTymets/node-red-react-example)
 
 Отже тепер можна приступати до написання нашого проекту. Будемо слідувати крокок за кроком і детально роглядати кожен з них.
@@ -225,7 +229,8 @@ const ImageCropper = ({ node, src, crop, onSelectFile, onImageLoaded, onCropComp
 export default ImageCropper;
 ```
 Я упустив деякі деталі щоб не розтянувати данну статтю. Усе вище згадане це простий Ract + Recompose. Думаю на цьому не варто зупинятися. Повний код доступний [here](https://github.com/VolodymyrTymets/node-red-react-example/tree/master/src/client/containers/ImageCropper)
-> ?? `window.Apiko.constants.lastSelectedUrl.value`  id="node-input-cropX"
+Як і уже заначалося вище занчення інтпутів `<input type="text" id="node-input-cropX"` передаватимуться на сервер. Тобто якщо користувач введе значення 3 node-red знатиме що змінна 'cropX===3'. В нашому випадку ці змінні проставлє сам реакт. Поля приховані що б не збивати з пантелику користувача.
+Також тут хотілося б відзначити змінну `window.Apiko.constants.lastSelectedUrl.value`. На жаль в node-red немає механізму щоб передавати змінні з ондного палета в інший (на клієнті). Це мене трохи розчарувало адже досить часто приходиьтся робити UI основі значень вибраних в попередньому палеті. Тому приходиться використовувати ось такі уловки. 
 
 #### Build React
 Ну щож тепер у нас є наші React components. Як же нам їх помістити в наш node-red pallet? У файлі `/pallets/apiko-image-cropper/apiko-image-cropper.html` у нас є елемент ` <div id="apiko-image-cropper">` Відповідно в нього нам слід і рендерити наш компонент.  Отже створимо новий файл і `/pallets/apiko-image-cropper/ui/index.js` який просто hєструє наш компонет. 
@@ -315,5 +320,6 @@ done
   "start": "nodemon --watch pallets --watch src/client --exec 'npm run build-all'"
 ```
 Ну і звичайно вам ще треба буде запустити `node-red`.
-## conclusion
+## Conclusion
+Отже у даній статті показано розробку невеликого проетку з використанням технології node-red. Показано яким чином настроїти і організувати як невеличкий так і досить значний проект. Також показано як використовувати React для ui частини node-red. Подібним чином можна використовувати і інші ui фрйворки як View js, Angular etc.
 
