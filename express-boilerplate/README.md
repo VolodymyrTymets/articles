@@ -183,7 +183,7 @@ module.exports = { errorHandler };
  
 Ще одне завдання яке стоїть перед розробником забезпечити максимально зручний запуск вашого проетку. Також було б добре мати так званий `hot-reload` вашого додатку. У  node js це можна реалізувати за допомогою [nodemon](https://nodemon.io/). 
 Ви можете написати простий npm script `nodemon --watch src --exec 'npm run start` чи sh script. Проте інколи виникає потреба запускати кілка процесів одночасно. Наприклад 1. запуск бази даних (mongo) 2. запуск api 3. запуск UI (react-script). Для таких цілей краще підходить [gulp](https://gulpjs.com/). Нижче наведений невеличкий приклад gulp файлу для запуску монго апі та react-script як єдиного проекту однією командою.
-![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig7.png?raw=true)
+![](https://github.com/VolodymyrTymets/articles/blob/express-boilerplate/express-boilerplate/img/fig8.png?raw=true)
 
 Тепер достатньо створити npm script dev ` "./node_modules/.bin/gulp run:dev",` та просто запустити ваш проект `npm run dev`
 - advices
