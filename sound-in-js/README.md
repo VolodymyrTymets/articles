@@ -50,6 +50,8 @@ server.listen('3001',  ()  => console.log('Server app listening on port 3001!'))
 В цілому тут 3 основні кроки. Читання файл і інформації про нього. Вказання заголовка `audio/mpeg` into response. Вигрузка самого файлу. Подібним чином ви можете вигружати будь які файли audio video pdf etc. Все що нам залишається це звернутися за адресою `api/v1/track`.
 
 ## What we can do with sound
+<iframe width="560" height="315" src="http://localhost:3000/example1" frameborder="0" allowfullscreen></iframe>
+
 ### play sound
 ### visualize sound
 ### a litle bit of math
