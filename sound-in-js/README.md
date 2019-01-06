@@ -1,6 +1,8 @@
 # How to work with sound in javascript
 Не так давно я мав можливість попрацювати із звуком в межах одного проекту. Для цього прийшолся дослідити дане питання дещо глибше. Завдяки цьому я дізнався багато нового та цікавого про те які насправді процеси відбуваються коли ми просто слухаємо музику. Тому я вирішив узагальнити нові знання і поділитися ними із іншими людьми. Можливо комусь також пригодяться дані знання. А почнем ми із невеличкої теоріх і плавно перейдем до прикладів того що можна робити у реальних проектах із звуком.
 ## Sound nature in computing
+> В даному розділі буде наведено те
+
 Перш завсе слід вдатися до початків і згадати а що таке власне звук? n physics, sound is a vibration that typically propagates as an audible wave of pressure, through a transmission medium such as a gas, liquid or solid (from [wiki](https://en.wikipedia.org/wiki/Sound)). Якщо коротко то це прості коливання повітря які вловлює нші вуха. Якщо прдставити звук грфічно то це хвиля яку можна позначети як f(t) де t - часовий інтервал.
 ![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig1.png?raw=true)
 Далі виникає нуступне логічне питання яким же чином наші пристрої відтворють цю хвилю. Для цього використовують [Digital audio](https://en.wikipedia.org/wiki/Digital_audio) - спосіб зберігання звуку у формі цифрового сигналу. Оскільки звук це форма хвилі в момент часу тому ці моменти можна виділити і зберігати у вигляді [samples](https://en.wikipedia.org/wiki/Sampling_(signal_processing)) (числових значень форми хвилі на кожен момент часу). 
@@ -12,8 +14,41 @@
 Кожен аудіо файл складається із двох части data and header. Data - це саме наша звукова хвиля наш масив даних такж відоий як `.raw` формат. Heder - це додаткова інформація для декодування наших даних вона мість інформацію про частоту дескритизації кількість каналів запису та іншу користну нагрузку типу автора альбом дату запису  і так далі.
 ![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig3.png?raw=true)
 Різниця між `.wav` та `.mp3` в тому що `.mp3` це зжатий формат !{силка}
+Від теорії перйдем до практики. Для даної статті всі прикладви зробленні Express + React прое основні підходи закладені у них не привязані до якось конкретного фреймфорка.
 
 ## How to load from the server
+Перш за все слід взяти якись файл для роботи (для прикладу візьмем `.wav` file).  Тут заргрузити його з клієнта або ж сервера. З клієнта це зробити досить просто використавши [file input element](https://developer.mozilla.org/ru/docs/Web/HTML/Element/Input/file). Яж хотів більше детальніше показати як вигрузити файл із сервера.  Нижче наведений невеликий приклад реалізації на express js. {!повний код}
+```
+...
+const express = require('express');
+const app = express();
+const api = express();
+
+api.get('/track', (req, res, err) => {
+  // generate file path
+  const filePath = path.resolve(__dirname, './private', './track.wav');
+  // get file size info
+  const stat = fileSystem.statSync(filePath);
+
+  // set response header info
+  res.writeHead(200, {
+    'Content-Type': 'audio/mpeg',
+    'Content-Length': stat.size
+  });
+  //create read stream
+  const readStream = fileSystem.createReadStream(filePath);
+  // attach this stream with response stream
+  readStream.pipe(res);
+});
+
+//register api calls
+app.use('/api/v1/', api);
+
+const server = http.createServer(app);
+server.listen('3001',  ()  => console.log('Server app listening on port 3001!'));
+```
+В цілому тут 3 основні кроки. Читання файл і інформації про нього. Вказання заголовка `audio/mpeg` into response. Вигрузка самого файлу. Подібним чином ви можете вигружати будь які файли audio video pdf etc. Все що нам залишається це звернутися за адресою `api/v1/track`.
+
 ## What we can do with sound
 ### play sound
 ### visualize sound
