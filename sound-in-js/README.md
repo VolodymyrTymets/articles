@@ -49,13 +49,20 @@ server.listen('3001',  ()  => console.log('Server app listening on port 3001!'))
 ```
 В цілому тут 3 основні кроки. Читання файл і інформації про нього. Вказання заголовка `audio/mpeg` into response. Вигрузка самого файлу. Подібним чином ви можете вигружати будь які файли audio video pdf etc. Все що нам залишається це звернутися за адресою `api/v1/track`.
 
-## What we can do with sound
-<iframe width="560" height="315" src="http://localhost:3000/example1" frameborder="0" allowfullscreen></iframe>
-
-### play sound
-### visualize sound
+## What we can do with sound on client
+Тепер коли ми знаємо як вигружати файли із сервера, наступним кроком буде отримати наш фай на клієнті. Якщо ми просто Виконаємо `GET` !{силка} запит у браузері ми отримаємо на файл. Просте хотілося б використати його на нашій сторінці якимось чином. Найпростіший спосіб це зробити використати елемент [audio](https://www.w3schools.com/html/html5_audio.asp) наступним чином. Результат за посилпнням !{силк}
+```
+  <audio controls>
+      <source src="/api/v1/track" type="audio/mpeg" />
+    </audio>
+```
+### Work with sound in bacground
+Звісно чудово що browse api надає нам такі прості елементи із коробки. Проте хотілося б мати більший контроль над звуком всередині нашого кодую. В цьому може допомогти [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API) - це набір інстурментів для роботи із звуком у браузері.
 ### a litle bit of math
-### listen of mic
+
+## How to use microphone 
+
+## Sound vizualiztion
 ## Sound streaming
    stream audio file
    stream server mic
