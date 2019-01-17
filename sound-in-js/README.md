@@ -103,9 +103,69 @@ const getAudioContext =  () => {
 ```
 Після чого залишається тіки викликати метод `source.start()`
 ### Як зупинити програвання?
-Просто виклечіть метод метод `source.stop()`.
+Просто виклечіть метод метод `source.stop()`. Також вам слід зберегти час коли ви нажали stop. Це необхідно якщо вам прийдеться відновити програвання із місця зупинки. В такеому випадку прийдеться викликати `source.start()` уже з параметром.
+```
+// start play
+let startedAt = Date.now();
+let pausedAt = null;
+source.start();
+
+// stop play
+source.stop();
+pausedAt = Date.now() - startedAt;
+
+// resume from where we stop
+source.start();
+startedAt = Date.now() - pausedAt;
+source.start(0, audionState.pausedAt / 1000);
+```
+
 ### Як відобразити процес програвання?
+Тут модна піти двома шляхами скоритсатися методом [createScriptProcessor](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createScriptProcessor) та відповідно його callback `onaudioprocess`. 
+```
+
+    const audioBuffer = await audioContext.decodeAudioData(response.data);
+     // create progress source
+    const  scriptNode = audioContext.createScriptProcessor(4096, audioBuffer.numberOfChannels, audioBuffer.numberOfChannels);
+    scriptNode.connect(audioContext.destination);
+    scriptNode.onaudioprocess = (e) => {
+         const rate = parseInt((e.playbackTime * 100) / audioBuffer.duration, 10);
+    };
+```
+Для того щоб відобразити скільки відсодкі пісні програло нам потрібно дві речі тривалість пісні `audioBuffer.duration`  та поточний час програвання 
+`e.playbackTime` а далі чиста математика.
+
+Недоліком є те щопід час виклику `source.stop()` вам прийдеться онуляти даний callback.
+
+Інший спосіб зберезти час початку відтворення і запустити оновслення скажим кодну секунду.
+```
+const audioBuffer = await audioContext.decodeAudioData(response.data);
+... 
+const startedAt = Date.now();
+const duration = audioBuffer.duration;
+source.start();
+
+setInterval(() => {
+      const playbackTime = (Date.now() - startedAt) / 1000;
+      const rate = parseInt((playbackTime * 100) / duration, 10);
+  },1000)
+```
 ### Як перемотати до певеного місця?
+Тут митуація дещо зворотя. Спершу слід визначити `rate`  а же на його основі вирахувати `playbackTime`. Щоб визначити час `rate` можна взяти за 100 довжину елемента progress та позицію мишки відносно місця куди користувач клікнув.
+```
+ onProgressClick: (e) => {
+   
+      const rate = (e.clientX * 100) / e.target.offsetWidth;
+      const playbackTime = (audioBuffer.duration * rate) / 100;
+      
+      source.stop();
+      source.start(o, playbackTime);
+      // dont foger change startedAt time
+      // startedAt = Date.now() - playbackTime * 1000;
+}
+```
+> тут також важливо не забути змінити `startedAt` інакше ваш прогрес буде відображатися невірно
+
 ### Як управляти гучністю?
 ### a litle bit of math
 
