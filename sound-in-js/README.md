@@ -5,12 +5,12 @@
 
 Перш завсе слід вдатися до початків і згадати а що таке власне звук? n physics, sound is a vibration that typically propagates as an audible wave of pressure, through a transmission medium such as a gas, liquid or solid (from [wiki](https://en.wikipedia.org/wiki/Sound)). Якщо коротко то це прості коливання повітря які вловлює нші вуха. Якщо прдставити звук грфічно то це хвиля яку можна позначети як f(t) де t - часовий інтервал.
 ![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig1.png?raw=true)
-Далі виникає нуступне логічне питання яким же чином наші пристрої відтворють цю хвилю. Для цього використовують [Digital audio](https://en.wikipedia.org/wiki/Digital_audio) - спосіб зберігання звуку у формі цифрового сигналу. Оскільки звук це форма хвилі в момент часу тому ці моменти можна виділити і зберігати у вигляді [samples](https://en.wikipedia.org/wiki/Sampling_(signal_processing)) (числових значень форми хвилі на кожен момент часу). 
+Далі виникає нуступне логічне питання яким же чином наші пристрої відтворють цю хвилю. Для цього використовують [Digital audio](https://en.wikipedia.org/wiki/Digital_audio) - спосіб зберігання звуку у формі цифрового сигналу. Оскільки звук це форма хвилі в момент часу тому ці моменти можна виділити і зберігати у вигляді [samples](https://en.wikipedia.org/wiki/Sampling_(signal_processing)) (числових значень форми хвилі на кожен момент часу).
 ![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig2.png?raw=true)
-Кожен семпл є набором бітів (значень 0 або 1). Зазвичай використовуються 16-бітні або 24-бітні сигнали. Кількість семплів на секунду в цифровому сигналі визначається частотою дискретизації (sample rate), яка вимірюється в герцах. Чим вища частота дискретизації — тим вищі частоти може містити звуковий сигнал. 
-Якщо вже дуже упрости ти то можна уявити собі звук як великий (дуже великий) масив значень звукових коливаня (як у байтах так і у числових значннях -N< 0 >N після декодування). Наприклад [0, -0.018, 0.028, 0.27, ... 0.1]. Довжина такого масиву залежить від частоти дискретизації вказаної при записі наприклад частота дискритезації 44400 означатиме що довжина такого масиву складатиме 44400 елементів за 1 секунду запису. Такрж існуж двохканальна запис при якій таких масмивів у вас два. 
+Кожен семпл є набором бітів (значень 0 або 1). Зазвичай використовуються 16-бітні або 24-бітні сигнали. Кількість семплів на секунду в цифровому сигналі визначається частотою дискретизації (sample rate), яка вимірюється в герцах. Чим вища частота дискретизації — тим вищі частоти може містити звуковий сигнал.
+Якщо вже дуже упрости ти то можна уявити собі звук як великий (дуже великий) масив значень звукових коливаня (як у байтах так і у числових значннях -N< 0 >N після декодування). Наприклад [0, -0.018, 0.028, 0.27, ... 0.1]. Довжина такого масиву залежить від частоти дискретизації вказаної при записі наприклад частота дискритезації 44400 означатиме що довжина такого масиву складатиме 44400 елементів за 1 секунду запису. Такрж існуж двохканальна запис при якій таких масмивів у вас два.
 ### How sound is saving on devices
-Після того як розібралися із звуковою хвилею настав час розібратися яким же чином на зберігати її на носієві. Для цього викоритсовують [цифровий аудіо формат](https://en.wikipedia.org/wiki/Audio_file_format).  Це всім нам відомі `.wav .mp3 ...`. Але яка що вони із себе представляють? 
+Після того як розібралися із звуковою хвилею настав час розібратися яким же чином на зберігати її на носієві. Для цього викоритсовують [цифровий аудіо формат](https://en.wikipedia.org/wiki/Audio_file_format).  Це всім нам відомі `.wav .mp3 ...`. Але яка що вони із себе представляють?
 Кожен аудіо файл складається із двох части data and header. Data - це саме наша звукова хвиля наш масив даних такж відоий як `.raw` формат. Heder - це додаткова інформація для декодування наших даних вона мість інформацію про частоту дескритизації кількість каналів запису та іншу користну нагрузку типу автора альбом дату запису  і так далі.
 ![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig3.png?raw=true)
 Різниця між `.wav` та `.mp3` в тому що `.mp3` це зжатий формат !{силка}
@@ -72,7 +72,7 @@ server.listen('3001',  ()  => console.log('Server app listening on port 3001!'))
 ```
 > слід вказати `responseType: 'arraybuffer'` into header щоб ваш браузер знав що він грузить саме `buffer` а не `json`
 
-Далі щоб програти файл слід створити клас екземпляр класу [AudioContext](https://developer.mozilla.org/en-US/docs/Web/API/AudioContext). Будь які подальші дії із звуко без нього неможливі. 
+Далі щоб програти файл слід створити клас екземпляр класу [AudioContext](https://developer.mozilla.org/en-US/docs/Web/API/AudioContext). Будь які подальші дії із звуко без нього неможливі.
 ```
 const getAudioContext =  () => {
   AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -97,7 +97,7 @@ const getAudioContext =  () => {
    const source = audioContext.createBufferSource();
    source.buffer = audioBuffer;
    source.connect(audioContext.destination);
-   
+
    // play audio
    source.start();
 ```
@@ -121,7 +121,7 @@ source.start(0, audionState.pausedAt / 1000);
 ```
 
 ### Як відобразити процес програвання?
-Тут модна піти двома шляхами скоритсатися методом [createScriptProcessor](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createScriptProcessor) та відповідно його callback `onaudioprocess`. 
+Тут модна піти двома шляхами скоритсатися методом [createScriptProcessor](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createScriptProcessor) та відповідно його callback `onaudioprocess`.
 ```
 
     const audioBuffer = await audioContext.decodeAudioData(response.data);
@@ -132,7 +132,7 @@ source.start(0, audionState.pausedAt / 1000);
          const rate = parseInt((e.playbackTime * 100) / audioBuffer.duration, 10);
     };
 ```
-Для того щоб відобразити скільки відсодкі пісні програло нам потрібно дві речі тривалість пісні `audioBuffer.duration`  та поточний час програвання 
+Для того щоб відобразити скільки відсодкі пісні програло нам потрібно дві речі тривалість пісні `audioBuffer.duration`  та поточний час програвання
 `e.playbackTime` а далі чиста математика.
 
 Недоліком є те щопід час виклику `source.stop()` вам прийдеться онуляти даний callback.
@@ -140,7 +140,7 @@ source.start(0, audionState.pausedAt / 1000);
 Інший спосіб зберезти час початку відтворення і запустити оновслення скажим кодну секунду.
 ```
 const audioBuffer = await audioContext.decodeAudioData(response.data);
-... 
+...
 const startedAt = Date.now();
 const duration = audioBuffer.duration;
 source.start();
@@ -154,10 +154,10 @@ setInterval(() => {
 Тут митуація дещо зворотя. Спершу слід визначити `rate`  а же на його основі вирахувати `playbackTime`. Щоб визначити час `rate` можна взяти за 100 довжину елемента progress та позицію мишки відносно місця куди користувач клікнув.
 ```
  onProgressClick: (e) => {
-   
+
       const rate = (e.clientX * 100) / e.target.offsetWidth;
       const playbackTime = (audioBuffer.duration * rate) / 100;
-      
+
       source.stop();
       source.start(o, playbackTime);
       // dont foger change startedAt time
@@ -167,9 +167,54 @@ setInterval(() => {
 > тут також важливо не забути змінити `startedAt` інакше ваш прогрес буде відображатися невірно
 
 ### Як управляти гучністю?
-### a litle bit of math
+Для цього потрібно створити [gainNode](https://developer.mozilla.org/en-US/docs/Web/API/GainNode) викликавши метод `audioContext.createGain();`. Після чого досить легко написати метод `setVolume`.
+```
+ const gainNode = audioContext.createGain();
+ ...
+  source.connect(gainNode);
+  const setVolume = (level) => {
+     gainNode.gain.setValueAtTime(level, audioContext.currentTime);
+   };
+  setVolume(-1); // mute
+  setVolume(2); // speek
+```
+Ну от  тепер ви знаєте усе щоб написати свій власний компонет для програвання аудіо файлів. Далі справа за тільки в кастомізації і функціональних можливостях які ван необхідні такі як час відтворення назва файлу перехід на наступний трек і так далі.
 
-## How to use microphone 
+### A litle bit of math
+Тепер коли ви знаєте як програвати аудіо файли як на разунок того щоб генерувувати власні звуки? Хотів показати якмжна у кілтка строк коду генерувати звук різної частотити. Невеликикий приклад можете переглянути [тут](https://sound-in-js.herokuapp.com/example1). повний код можете переглянути [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example3). Для того щоб генерувати звук різної частити слід методом [createOscillator](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createOscillator).
+
+```
+const getOscillator = (startFrequency) => {
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioCtx.createOscillator();
+  oscillator.type = 'square';
+  oscillator.frequency.setValueAtTime(startFrequency, audioCtx.currentTime);
+  oscillator.connect(audioCtx.destination);
+
+  const start = () => oscillator.start();
+  const stop = () => oscillator.stop();
+  const change = frequency =>
+    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime); // value in hertz
+
+  return { start, stop, change };
+};
+
+let frequency = 100;
+const oscillator = getOscillator(frequency);
+oscillator.start();
+
+const interval = setInterval(() => {
+  frequency = frequency + 100;
+  oscillator.change(frequency);
+}, 100);
+setTimeout(() => {
+  clearInterval(interval);
+  oscillator.stop();
+}, 2000);
+```
+
+
+## How to use microphone
 
 ## Sound vizualiztion
 ## Sound streaming
