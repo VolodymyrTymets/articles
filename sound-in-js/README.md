@@ -50,14 +50,63 @@ server.listen('3001',  ()  => console.log('Server app listening on port 3001!'))
 В цілому тут 3 основні кроки. Читання файл і інформації про нього. Вказання заголовка `audio/mpeg` into response. Вигрузка самого файлу. Подібним чином ви можете вигружати будь які файли audio video pdf etc. Все що нам залишається це звернутися за адресою `api/v1/track`.
 
 ## What we can do with sound on client
-Тепер коли ми знаємо як вигружати файли із сервера, наступним кроком буде отримати наш фай на клієнті. Якщо ми просто Виконаємо `GET` !{силка} запит у браузері ми отримаємо на файл. Просте хотілося б використати його на нашій сторінці якимось чином. Найпростіший спосіб це зробити використати елемент [audio](https://www.w3schools.com/html/html5_audio.asp) наступним чином. Результат за посилпнням !{силк}
+Тепер коли ми знаємо як вигружати файли із сервера, наступним кроком буде отримати наш фай на клієнті. Якщо ми просто Виконаємо `GET` !{силка} запит у браузері ми отримаємо на файл. Просте хотілося б використати його на нашій сторінці якимось чином. Найпростіший спосіб це зробити використати елемент [audio](https://www.w3schools.com/html/html5_audio.asp) наступним чином. See example here() !{силк} 
 ```
   <audio controls>
       <source src="/api/v1/track" type="audio/mpeg" />
     </audio>
 ```
-### Work with sound in bacground
-Звісно чудово що browse api надає нам такі прості елементи із коробки. Проте хотілося б мати більший контроль над звуком всередині нашого кодую. В цьому може допомогти [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API) - це набір інстурментів для роботи із звуком у браузері.
+### Work with sound in background
+Звісно чудово що browse api надає нам такі прості елементи із коробки. Проте хотілося б мати більший контроль над звуком всередині нашого кодую. Щоб мати можливість насити свій власний Audio control та кастомізувати його так як вам потрібно. Наприклад такий.  See example here() !{силк} 
+![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig4.png?raw=true)
+
+В цьому може допомогти [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API) - це набір інстурментів для роботи із звуком у браузері. Отже з чого слід почати? А почне і звідповіді на кілька запитань.
+
+### Як прогати аудіо файл?
+Перш за все слід загрузити його з сервера. Для цього можна скористатится методом [fetch](https://developer.mozilla.org/ru/docs/Web/API/Fetch_API) або ж іншими бібліотеками. Я наприклад викристовую [axios](https://www.npmjs.com/package/axios).
+
+```
+ const response = await axios.get(url, {
+     responseType: 'arraybuffer', // <- important param
+   });
+```
+> слід вказати `responseType: 'arraybuffer'` into header щоб ваш браузер знав що він грузить саме `buffer` а не `json`
+
+Далі щоб програти файл слід створити клас екземпляр класу [AudioContext](https://developer.mozilla.org/en-US/docs/Web/API/AudioContext). Будь які подальші дії із звуко без нього неможливі. 
+```
+const getAudioContext =  () => {
+  AudioContext = window.AudioContext || window.webkitAudioContext;
+  const audioContent = new AudioContext();
+  return audioContent;
+};
+```
+> Тут є досить важливий нюанс! Деякі браузери дозволюь використовувати AudioContext тільки після взаємодії користувача із сторінкою. Тобто якщо користувач не клікну на жодну кнопку чи інше мусце на сторінці у вас буде помилка. Саме тому `getAudioContext`.
+
+Щоб програти аудіо потрібно створити `BufferSource` для цього в AudioContext є метод [createBufferSource](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createBufferSource). Після чого `BufferSource` потребує `audioBuffer` а візьмем ми його із нашого вайлу скориставшись методом [decodeAudioData](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/decodeAudioData). Разом усе це виглядатиме наступним чином:
+```
+   // load audio file from server
+   const response = await axios.get(url, {
+     responseType: 'arraybuffer',
+   });
+   // create audio context
+   const audioContext = getAudioContext();
+   // create audioBuffer (decode audio file)
+   const audioBuffer = await audioContext.decodeAudioData(response.data);
+
+   // create audio source
+   const source = audioContext.createBufferSource();
+   source.buffer = audioBuffer;
+   source.connect(audioContext.destination);
+   
+   // play audio
+   source.start();
+```
+Після чого залишається тіки викликати метод `source.start()`
+### Як зупинити програвання?
+Просто виклечіть метод метод `source.stop()`.
+### Як відобразити процес програвання?
+### Як перемотати до певеного місця?
+### Як управляти гучністю?
 ### a litle bit of math
 
 ## How to use microphone 
