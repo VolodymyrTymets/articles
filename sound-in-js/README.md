@@ -236,6 +236,55 @@ window.navigator.getUserMedia({ audio:true }, (stream) => {
 ```
 Із мікрофоном також можна використовувати `audioContext.createAnalyser()` для отрмання спектральних характеристик сигналу. Їх часто використовують для візуалізації звукових сигналів. А те як візуалізувати програвання файлу наведено у наступному розділі. Виж таким же чином можете зроьити це ідля сигналу отриманого із мікрофона.
 ## Sound vizualiztion
+Отже ми вже навчилися створювати власний програвач аудіо файлів. Тепре же в даному розділі я б хотів показати як дещо покращити наш програвач додавши візуалізацію звукової хвилі(Sinewave) та спектральний характеристик(frequency) або  ж equalizer (назвем їх audio bars).  Так як показано нижче. Приклад можна переглянути [тут](https://sound-in-js.herokuapp.com/example4) а повиий код реалізації [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example4)
+
+Отже з чого почакти? Для знадобляться два canvases. Пропишіть їх у html та отримай те доступ до них у js.
+
+```
+// in hmml
+ <div className="bars-wrapper">
+      <canvas className="frequency-bars" width="1024" height="100"></canvas>
+      <canvas className="sinewave" width="1024" height="100"></canvas>
+</div>
+....
+// in  js
+ const frequencyC = document.querySelector('.frequency-bars');
+ const sinewaveC = document.querySelector('.sinewave');
+```
+До них вернемся пізніше. Із попередіх розділві ми дізналися як використовувати `AudioContext` щоб декодувати файл і програти його. Для того щоб отрмати детальнішу інформацію про нього використовується [AudioAnalyser](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createAnalyser). Отже змінимо наш метод `getAudioContext` трошки.
+
+```
+const getAudioContext = () => {
+  AudioContext = window.AudioContext || window.webkitAudioContext;
+  const audioContext = new AudioContext();
+  const analyser = audioContext.createAnalyser();
+
+  return { audioContext, analyser };
+};
+```
+Тпер теж сами зробимо із нашим методом `loadFile`:
+```
+const loadFile = (url, { frequencyC, sinewaveC }) => new Promise(async (resolve, reject) => {
+   const response = await axios.get(url, {  responseType: 'arraybuffer' });
+   const { audioContext, analyser } = getAudioContext();
+   const audioBuffer = await audioContext.decodeAudioData(response.data);
+   ...
+   let source = audioContext.createBufferSource();
+   source.buffer = audioBuffer;
+   source.start();
+```
+Як бачити даний метод приймаж наші canvases як параметри. Тепер нам слід законектити `analyser` до `source` щоб мати сожливість використовувати його для нашого аудіо файла. Також слід  викликати два методи `drawFrequency` and `drawSinewave` для побдови audio bars:
+```
+source.connect(analyser);
+drawFrequency();
+drawSinewave();
+```
+
+### drawSinewave
+### drawFrequency
+
+
+
 
 ## Sound streaming
    stream audio file
