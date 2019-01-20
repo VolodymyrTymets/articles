@@ -212,11 +212,31 @@ setTimeout(() => {
   oscillator.stop();
 }, 2000);
 ```
-
-
 ## How to use microphone
+Використання мікрофону пристрою браузером зараз досить поширена практика. На часть зараз це досит просто зробити. Для цього слід просто скористатися викликаом метода `getUserMedia` обєктва [window.navigator]( https://developer.mozilla.org/en-US/docs/Web/API/Window/navigator).  Після чого ви отримаєте доступ до обєкта  `stream` sp якого за допомогою  `AudioContext` сожна зробити `audioSource`. Для отримання chank of data from mic вожна скористатися `createScriptProcessor` тай його методом `onaudioprocess`. Нижче наведено невеликий код як усе це реалізувати разом.
+```
+// get permission to use mic
+window.navigator.getUserMedia({ audio:true }, (stream) => {
+    const audioContext = new AudioContext();
+    // get mic stream
+    const source = audioContext.createMediaStreamSource( stream );
+    const scriptNode = audioContext.createScriptProcessor(4096, 1, 1);
+    source.connect(scriptNode);
+    scriptNode.connect(audioContext.destination);
+    // output to speaker
+    // source.connect(audioContext.destination);
 
+    // on process event
+    scriptNode.onaudioprocess = (e) => {
+      // get mica data
+      console.log(e.inputBuffer.getChannelData(0))
+    };
+
+}, console.log);
+```
+Із мікрофоном також можна використовувати `audioContext.createAnalyser()` для отрмання спектральних характеристик сигналу. Їх часто використовують для візуалізації звукових сигналів. А те як візуалізувати програвання файлу наведено у наступному розділі. Виж таким же чином можете зроьити це ідля сигналу отриманого із мікрофона.
 ## Sound vizualiztion
+
 ## Sound streaming
    stream audio file
    stream server mic
