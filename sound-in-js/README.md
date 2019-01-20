@@ -279,11 +279,80 @@ source.connect(analyser);
 drawFrequency();
 drawSinewave();
 ```
-
 ### drawSinewave
-### drawFrequency
+Для побудови Sinewave нам потрібно знати дві речі як взяти дані та спосіб їх відображення. А які ж дані ми будемо відображати? У першому розділі я наводив невеличкий опис про природу звуку і те як він зберігається на пристроях. Там я описав що звук це пеане значення в момент часу digital audio. Отже настав момент розкодувати і відобразити наші точки. Для цього використовується метод [getByteTimeDomainData](https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData). Проте оскільки даний метод приймає масив ми створимо наш маси спешу.
 
+```
+...
+ const audioBuffer = await audioContext.decodeAudioData(response.data);
+ analyser.fftSize = 1024;
+ let sinewaveDataArray = new Uint8Array(analyser.fftSize);
+    // draw Sinewave
+   const drawSinewave = function() {
+     // get sinewave data
+     analyser.getByteTimeDomainData(sinewaveDataArray);
+     requestAnimationFrame(drawSinewave);
 
+     // canvas config
+     sinewaveСanvasCtx.fillStyle = styles.fillStyle;
+     sinewaveСanvasCtx.fillRect(0, 0, sinewaveC.width, sinewaveC.height);
+     sinewaveСanvasCtx.lineWidth = styles.lineWidth;
+     sinewaveСanvasCtx.strokeStyle = styles.strokeStyle;
+     sinewaveСanvasCtx.beginPath();
+
+     // draw wave
+     const sliceWidth = sinewaveC.width * 1.0 / analyser.fftSize;
+     let x = 0;
+
+     for(let i = 0; i < analyser.fftSize; i++) {
+       const v = sinewaveDataArray[i] / 128.0; // byte / 2 || 256 / 2
+       const y = v * sinewaveC.height / 2;
+
+       if(i === 0) {
+         sinewaveСanvasCtx.moveTo(x, y);
+       } else {
+         sinewaveСanvasCtx.lineTo(x, y);
+       }
+       x += sliceWidth;
+     }
+
+     sinewaveСanvasCtx.lineTo(sinewaveC.width, sinewaveC.height / 2);
+     sinewaveСanvasCtx.stroke();
+   };
+```
+Із важливого тут слід пояснити два моменти. Перше це [analyser.fftSize](https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/fftSize) параметр. Він вказує з якою точністю декодувати ауді одані тобто якої довжини буде масив `sinewaveDataArray`. Попробуйте змінити дане значення і побачите наскільки міняється вид хвилі. А друге це [`requestAnimationFrame(drawSinewave)`](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame) означає що наша функція виконувитеметь перед кожним оновденням кадрів. У се решта це досить простий код роботи із канвасом.
+Для побудови equalizer нпишемо функцію `drawFrequency` Її реалізація нічим не відрізняються від попередньої за винятком виклику метода `analyser.getByteFrequencyData(frequencyDataArray)` та коду робои із канвасом (тепер ми будуємо прямокутники а не лінію).
+
+```
+analyser.fftSize = styles.fftSize;
+let frequencyDataArray = new Uint8Array(analyser.frequencyBinCount);
+
+   const drawFrequency = function() {
+    // get equalizer data
+     analyser.getByteFrequencyData(frequencyDataArray);
+     requestAnimationFrame(drawFrequency);
+
+     // canvas config
+     frequencyСanvasCtx.fillStyle = styles.fillStyle;
+     frequencyСanvasCtx.fillRect(0, 0, frequencyC.width, frequencyC.height);
+     frequencyСanvasCtx.beginPath();
+
+     // draw frequency - bar
+     const barWidth = (frequencyC.width / analyser.frequencyBinCount) * 2.5;
+     let barHeight;
+     let x = 0;
+
+     for(let i = 0; i < analyser.frequencyBinCount; i++) {
+       barHeight = frequencyDataArray[i];
+
+       frequencyСanvasCtx.fillStyle = styles.strokeStyle;
+       frequencyСanvasCtx.fillRect(x, frequencyC.height - barHeight / 2, barWidth, barHeight / 2);
+
+       x += barWidth + 1;
+     }
+   };
+```
+ну щож тепер ви знаєте як будувати нескладну візуалізацію звуку. Якщо ви раніше працбвали із канвасом думаю додати якісь додаткові ефекти не складе для вас проблему.
 
 
 ## Sound streaming
