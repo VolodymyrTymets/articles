@@ -238,7 +238,7 @@ window.navigator.getUserMedia({ audio:true }, (stream) => {
 ## Sound vizualiztion
 Отже ми вже навчилися створювати власний програвач аудіо файлів. Тепре же в даному розділі я б хотів показати як дещо покращити наш програвач додавши візуалізацію звукової хвилі(Sinewave) та спектральний характеристик(frequency) або  ж equalizer (назвем їх audio bars).  Так як показано нижче.Приклад можна переглянути [тут](https://sound-in-js.herokuapp.com/example4) а повиий код реалізації [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example4)
 
-![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig5.png?raw=true)
+![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig5.gif?raw=true)
 
 Отже з чого почакти? Для знадобляться два canvases. Пропишіть їх у html та отримай те доступ до них у js.
 
