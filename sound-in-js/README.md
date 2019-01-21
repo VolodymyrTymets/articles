@@ -236,7 +236,9 @@ window.navigator.getUserMedia({ audio:true }, (stream) => {
 ```
 Із мікрофоном також можна використовувати `audioContext.createAnalyser()` для отрмання спектральних характеристик сигналу. Їх часто використовують для візуалізації звукових сигналів. А те як візуалізувати програвання файлу наведено у наступному розділі. Виж таким же чином можете зроьити це ідля сигналу отриманого із мікрофона.
 ## Sound vizualiztion
-Отже ми вже навчилися створювати власний програвач аудіо файлів. Тепре же в даному розділі я б хотів показати як дещо покращити наш програвач додавши візуалізацію звукової хвилі(Sinewave) та спектральний характеристик(frequency) або  ж equalizer (назвем їх audio bars).  Так як показано нижче. Приклад можна переглянути [тут](https://sound-in-js.herokuapp.com/example4) а повиий код реалізації [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example4)
+Отже ми вже навчилися створювати власний програвач аудіо файлів. Тепре же в даному розділі я б хотів показати як дещо покращити наш програвач додавши візуалізацію звукової хвилі(Sinewave) та спектральний характеристик(frequency) або  ж equalizer (назвем їх audio bars).  Так як показано нижче.Приклад можна переглянути [тут](https://sound-in-js.herokuapp.com/example4) а повиий код реалізації [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example4)
+
+![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig5.png?raw=true)
 
 Отже з чого почакти? Для знадобляться два canvases. Пропишіть їх у html та отримай те доступ до них у js.
 
@@ -279,7 +281,6 @@ source.connect(analyser);
 drawFrequency();
 drawSinewave();
 ```
-### drawSinewave
 Для побудови Sinewave нам потрібно знати дві речі як взяти дані та спосіб їх відображення. А які ж дані ми будемо відображати? У першому розділі я наводив невеличкий опис про природу звуку і те як він зберігається на пристроях. Там я описав що звук це пеане значення в момент часу digital audio. Отже настав момент розкодувати і відобразити наші точки. Для цього використовується метод [getByteTimeDomainData](https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode/getByteTimeDomainData). Проте оскільки даний метод приймає масив ми створимо наш маси спешу.
 
 ```
@@ -354,7 +355,45 @@ let frequencyDataArray = new Uint8Array(analyser.frequencyBinCount);
 ```
 ну щож тепер ви знаєте як будувати нескладну візуалізацію звуку. Якщо ви раніше працбвали із канвасом думаю додати якісь додаткові ефекти не складе для вас проблему.
 
-
 ## Sound streaming
-   stream audio file
-   stream server mic
+Раніше ми розглянули як працювати із аудіо файлом. Проте перед початко роботи із ним ми завжди чекали поки він загрузиться. А якщо це файл дісно великий і вадить досить багато то й очікувати користувачу прийшлося б досить довго. А якщо це взагалі не файл а якесь stream source. Про це поговоримо далі.    
+### Stream audio filе
+Булоб чудово програвати файл і грузити його одночасно. На жаль [Fetch_API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) не підтримують streaming responce. Проте похожий функціонал можна реалізувати за допомогю сокетів.
+Для того щоб розбити наш файл на chanks і відправляти на клієнт частинами скористаємося бібліотекою [socket.io-stream](https://www.npmjs.com/package/socket.io-stream). Реалізація виглядатиме  наступним чином. Повний код реалізації доступний [тут](https://github.com/VolodymyrTymets/sound-in-js/blob/master/server/index.js).
+```
+const ss = require('socket.io-stream');
+const server = http.createServer(app);
+const io = require('socket.io').listen(server);
+
+io.on('connection', client => {
+  const stream = ss.createStream();
+  client.on('track', () => {
+    const filePath = path.resolve(__dirname, './private', './track.wav');
+    // get file info
+    const stat = fileSystem.statSync(filePath);
+    const readStream = fileSystem.createReadStream(filePath);
+    // pipe stream with response stream
+    readStream.pipe(stream);
+    ss(client).emit('track-stream', stream, { stat });
+  });
+});
+```
+Даний код чекає на підключення користувача і події від нього `track` після чого емітить подію `track-stream`. тепер ми отримаємо на слієнті обєкт `stream` з методом `on('data'`.
+Тепер на кслієнті нам слід змінти нам метод `loadFile` який ми використовували у попередніх прикладах додавши socket.
+```
+import ss from 'socket.io-stream';
+const socket = socketClient(url);
+const loadFile = ({ frequencyC, sinewaveC }, styles, onLoadProcess) => new Promise(async (resolve, reject) => {
+   socket.emit('track', () => {});
+   ss(socket).on('track-stream', (stream, { stat }) => {
+     stream.on('data', (data) => {
+       // calculate loading process rate 
+       const loadRate = (data.length * 100 ) / stat.size;
+       onLoadProcess(loadRate);
+       // next step here
+     })
+   });
+```
+Даний код конектиться до наого сервера та "make call" track event. після чого отримуємо stream `ss(socket).on('track-stream'` а вже із  stream отримуємо chunk `stream.on('data'`. А маючи інформацію про розмір файлу і довжину chunk можна обрахувати процес завантаження.
+
+###   stream server mic
