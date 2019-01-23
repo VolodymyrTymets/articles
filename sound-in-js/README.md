@@ -360,7 +360,7 @@ let frequencyDataArray = new Uint8Array(analyser.frequencyBinCount);
 
 
 ### Stream audio filе
-Ви могли замітити що ми завжди чикали на загрузку цілого файла. А при повільному інтернеті нам прийдеться чекати досить довго. Напевно програвати файл і грузити його одночасно булоь дещо швидше. Приклад роботи такого підходу показано [тут](https://sound-in-js.herokuapp.com/example4) а повиий код реалізації [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example5)
+Ви могли замітити що ми завжди чикали на загрузку цілого файла. А при повільному інтернеті нам прийдеться чекати досить довго. Напевно програвати файл і грузити його одночасно булоь дещо швидше. Приклад роботи такого підходу показано [тут](https://sound-in-js.herokuapp.com/example5) а повиий код реалізації [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example5)
 
 
 ![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig6.gif?raw=true)
