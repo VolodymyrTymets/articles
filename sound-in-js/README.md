@@ -238,7 +238,7 @@ window.navigator.getUserMedia({ audio:true }, (stream) => {
 ## Sound vizualiztion
 Отже ми вже навчилися створювати власний програвач аудіо файлів. Тепре же в даному розділі я б хотів показати як дещо покращити наш програвач додавши візуалізацію звукової хвилі(Sinewave) та спектральний характеристик(frequency) або  ж equalizer (назвем їх audio bars).  Так як показано нижче.Приклад можна переглянути [тут](https://sound-in-js.herokuapp.com/example4) а повиий код реалізації [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example4)
 
-![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig5.png?raw=true)
+![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig5.gif?raw=true)
 
 Отже з чого почакти? Для знадобляться два canvases. Пропишіть їх у html та отримай те доступ до них у js.
 
@@ -356,9 +356,14 @@ let frequencyDataArray = new Uint8Array(analyser.frequencyBinCount);
 ну щож тепер ви знаєте як будувати нескладну візуалізацію звуку. Якщо ви раніше працбвали із канвасом думаю додати якісь додаткові ефекти не складе для вас проблему.
 
 ## Sound streaming
-Раніше ми розглянули як працювати із аудіо файлом. Проте перед початко роботи із ним ми завжди чекали поки він загрузиться. А якщо це файл дісно великий і вадить досить багато то й очікувати користувачу прийшлося б досить довго. А якщо це взагалі не файл а якесь stream source. Про це поговоримо далі.    
+Раніше ми розглянули як працювати із аудіо файлом. Проте перед початко роботи із ним ми завжди чекали поки він загрузиться. А якщо це файл дісно великий і вадить досить багато то й очікувати користувачу прийшлося б досить довго. А якщо це взагалі не файл а якесь stream source. Про це поговоримо далі.   
+
+
 ### Stream audio filе
-Булоб чудово програвати файл і грузити його одночасно. На жаль [Fetch_API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) не підтримують streaming responce. Проте похожий функціонал можна реалізувати за допомогю сокетів.
+Ви могли замітити що ми завжди чикали на загрузку цілого файла. А при повільному інтернеті нам прийдеться чекати досить довго. Напевно програвати файл і грузити його одночасно булоь дещо швидше. Приклад роботи такого підходу показано [тут](https://sound-in-js.herokuapp.com/example4) 
+
+![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig6.gif?raw=true)
+На жаль [Fetch_API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) не підтримують streaming responce. Проте похожий функціонал можна реалізувати за допомогю сокетів.
 Для того щоб розбити наш файл на chanks і відправляти на клієнт частинами скористаємося бібліотекою [socket.io-stream](https://www.npmjs.com/package/socket.io-stream). Реалізація виглядатиме  наступним чином. Повний код реалізації доступний [тут](https://github.com/VolodymyrTymets/sound-in-js/blob/master/server/index.js).
 ```
 const ss = require('socket.io-stream');
