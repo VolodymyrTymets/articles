@@ -1,8 +1,6 @@
 # How to work with sound in javascript
 Не так давно я мав можливість попрацювати із звуком в межах одного проекту. Для цього прийшолся дослідити дане питання дещо глибше. Завдяки цьому я дізнався багато нового та цікавого про те які насправді процеси відбуваються коли ми просто слухаємо музику. Тому я вирішив узагальнити нові знання і поділитися ними із іншими людьми. Можливо комусь також пригодяться дані знання. А почнем ми із невеличкої теоріх і плавно перейдем до прикладів того що можна робити у реальних проектах із звуком.
 ## Sound nature in computing
-> В даному розділі буде наведено те
-
 Перш завсе слід вдатися до початків і згадати а що таке власне звук? n physics, sound is a vibration that typically propagates as an audible wave of pressure, through a transmission medium such as a gas, liquid or solid (from [wiki](https://en.wikipedia.org/wiki/Sound)). Якщо коротко то це прості коливання повітря які вловлює нші вуха. Якщо прдставити звук грфічно то це хвиля яку можна позначети як f(t) де t - часовий інтервал.
 ![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig1.png?raw=true)
 Далі виникає нуступне логічне питання яким же чином наші пристрої відтворють цю хвилю. Для цього використовують [Digital audio](https://en.wikipedia.org/wiki/Digital_audio) - спосіб зберігання звуку у формі цифрового сигналу. Оскільки звук це форма хвилі в момент часу тому ці моменти можна виділити і зберігати у вигляді [samples](https://en.wikipedia.org/wiki/Sampling_(signal_processing)) (числових значень форми хвилі на кожен момент часу).
@@ -356,7 +354,7 @@ let frequencyDataArray = new Uint8Array(analyser.frequencyBinCount);
 ну щож тепер ви знаєте як будувати нескладну візуалізацію звуку. Якщо ви раніше працбвали із канвасом думаю додати якісь додаткові ефекти не складе для вас проблему.
 
 ## Sound streaming
-Раніше ми розглянули як працювати із аудіо файлом. Проте перед початко роботи із ним ми завжди чекали поки він загрузиться. А якщо це файл дісно великий і вадить досить багато то й очікувати користувачу прийшлося б досить довго. А якщо це взагалі не файл а якесь stream source. Про це поговоримо далі.   
+Раніше ми розглянули як працювати із аудіо файлом. Проте перед початко роботи із ним ми завжди чекали поки він загрузиться. А якщо це файл дісно великий і вадить досить багато то й очікувати користувачу прийшлося б досить довго. А якщо це взагалі не файл а якесь stream source. Про це поговоримо далі.
 
 
 ### Stream audio filе
@@ -393,7 +391,7 @@ const loadFile = ({ frequencyC, sinewaveC }, styles, onLoadProcess) => new Promi
    socket.emit('track', () => {});
    ss(socket).on('track-stream', (stream, { stat }) => {
      stream.on('data', (data) => {
-       // calculate loading process rate 
+       // calculate loading process rate
        const loadRate = (data.length * 100 ) / stat.size;
        onLoadProcess(loadRate);
        // next step here
@@ -417,7 +415,6 @@ audioContext.decodeAudioData(data); // will throw exeption here
 ### Відтворення файлу в цілому
 Тепер коли ми розкодували наші дані ми може їх програти. Але проблема в тому що це леше кусочок даних (навіть на пів секунди) і якщо ми попробуємо програти дані по мірі їх поступлення получиться хаос. Попробуйте виконати наступний код.
  ```
- 
  stream.on('data', async (data) => {
        const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 44100));
        source = audioContext.createBufferSource();
@@ -425,15 +422,61 @@ audioContext.decodeAudioData(data); // will throw exeption here
        source.connect(audioContext.destination);
        source.start();
  ```
-Ви почуєте набір непонятних вам звуків але не пісню. В все тому що дані приходитимуть набагато швидше ніж кожен кусочок сід програвати. Отже кожен кусочок даних слід програвати із певною затримкою. Але з якою? Напевно ця затримка має бути рівна тривалості попереднього кусочка даних. Попробуйе змінти лише одну строчку коду   
+Ви почуєте набір непонятних вам звуків але не пісню. В все тому що дані приходитимуть набагато швидше ніж кожен кусочок сід програвати. Отже кожен кусочок даних слід програвати із певною затримкою. Але з якою? Напевно ця затримка має бути рівна тривалості попереднього кусочка даних. Попробуйе змінти лише одну строчку коду
 ```
   source.start(source.buffer.duration);
 ```
 Даний код означатиме програй мені це аудіо кусок чере `source.buffer.duration` час.
-
-
-
-
-###   stream server mic
-
-
+Проте і при такому підході не все добре. Виникла інша проблеми як відобразии прогрес програвання? як зупинити програвання? як відновити програвання?
+Щодо першого питання то це досить просто вирішити. Як ми вже знаєм із попереднього прикладу для того щоб відобразити процес програвання достатньо мати час початку і тривалість. Із часом початку все просто а от трвалість вираховується на основі тривалості отриманого кусочка даний і того скільки відчотків він займає від загального розміру треку.
+```
+ ss(socket).on('track-stream', (stream, { stat }) => {
+     stream.on('data', (data) => {
+       // calculate loading process rate
+       const loadRate = (data.length * 100 ) / stat.size;
+        const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 44100));
+        source = audioContext.createBufferSource();
+        source.buffer = audioBufferChunk;
+        // here duration of track
+        const duration = (100 / loadRate) * audioBufferChunk.duration;
+       })
+ })
+```
+Щодо другого питання тут усе ще складніше. Основна проблема тут кожен раз коли ми отримуємо дані ми переприсвоюємо `source`. А викликати `source.start` or `source.stop` можна тільки в конкретного інстата який ми маємо. Білше того навіть якщо ми збережем `firstSource` в момент виклику `firstSource.start` він програє тількі ту кількість даних яку отрмав на момент запуску і просто зупиниться. Тому нам потрібно змерджити усі наші чанки і відтворювати програвання якщо воно зупинилося. Для тогощоб змеоджити чанки використаємо утиліту `appendBuffer` (повний код доступний [тут](https://github.com/VolodymyrTymets/sound-in-js/blob/master/client/src/components/Example5/wave-heared.js))
+```
+const newaudioBuffer = (source && source.buffer)
+    ? appendBuffer(source.buffer, audioBufferChunk, audioContext)
+    : audioBufferChunk;
+    source = audioContext.createBufferSource();
+    source.buffer = newaudioBuffer;
+```
+А для того зо продовжити відтворюваня і з місця зупинки запамятаємо тривалість `source.buffer.duration` на момент початку відтворення і запустимо інтервал яки перевірятиме чи це час сплив чи ні яко так починає програвання вже новго `source` і зсувом часу який ми запамятали. Після завершення загрузки видаляємо наш інтервал і працюємо собі скокійно із ціли файлом. Повиний код доступний  [тут](https://github.com/VolodymyrTymets/sound-in-js/blob/master/client/src/components/Example5/utils.js)
+```
+  const whileLoadingInterval = setInterval(() => {
+     if(startAt) {
+       const inSec = (Date.now() - startAt) / 1000;
+       if (playWhileLoadingDuration && inSec >= playWhileLoadingDuration) {
+         playWhileLoading(playWhileLoadingDuration);
+         playWhileLoadingDuration = source.buffer.duration
+       }
+     } else if(source) {
+       playWhileLoadingDuration = source.buffer.duration;
+       startAt = Date.now();
+       playWhileLoading();
+     }
+   }, 500);
+```
+На рахунок останнього питаня як відтворити програвання з місця відтворення. На жаль я не мав часу подумати над цим питання але думаю вкориставши інформацію із цієї статті у вас все вийде.
+### Stream server mic
+Як я уже казав ждерелом стріму може виступати не тільки файл а й інші джерела наприклад мікрофон сервера. Мало де пригодиться така задача але все ж є випадки коли це потріно. Частіше потрібно зєднати двох клієнтів. Проте один з яким я стикнувся передача звуку і Raspberry Pi скажімо і візуалізація цього діла на скажімо телефоні. Тому тут вам просто скажу що це можливо і одна з таких бібліотек [mic](https://www.npmjs.com/package/mic). У неї є чудовий метод
+```
+micInputStream.on('data', function(data) {
+    console.log("Recieved Input Stream: " + data.length);
+});
+// or
+const stream = ss.createStream();
+micInputStream.pipe(stream);
+```
+На а далі усе по аналої із файлом.
+## Conclusion
+Отже в даній статті я хотів поділитися із вами як можна працювати із звуко у javascript. Як модна побудувати кастомний програвач музики і стилізувати його як вам захочеться. Дав невелички уявлення про те як можна попрацювати і strteams. Я старався дати якомого більше практичних прикладів коду. Надіюся інформація їз ціїє статті стане комусь у нагоді.
