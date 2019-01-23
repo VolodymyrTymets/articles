@@ -360,7 +360,8 @@ let frequencyDataArray = new Uint8Array(analyser.frequencyBinCount);
 
 
 ### Stream audio filе
-Ви могли замітити що ми завжди чикали на загрузку цілого файла. А при повільному інтернеті нам прийдеться чекати досить довго. Напевно програвати файл і грузити його одночасно булоь дещо швидше. Приклад роботи такого підходу показано [тут](https://sound-in-js.herokuapp.com/example4) 
+Ви могли замітити що ми завжди чикали на загрузку цілого файла. А при повільному інтернеті нам прийдеться чекати досить довго. Напевно програвати файл і грузити його одночасно булоь дещо швидше. Приклад роботи такого підходу показано [тут](https://sound-in-js.herokuapp.com/example4) а повиий код реалізації [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example5)
+
 
 ![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig6.gif?raw=true)
 На жаль [Fetch_API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) не підтримують streaming responce. Проте похожий функціонал можна реалізувати за допомогю сокетів.
