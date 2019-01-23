@@ -238,7 +238,7 @@ window.navigator.getUserMedia({ audio:true }, (stream) => {
 ## Sound vizualiztion
 Отже ми вже навчилися створювати власний програвач аудіо файлів. Тепре же в даному розділі я б хотів показати як дещо покращити наш програвач додавши візуалізацію звукової хвилі(Sinewave) та спектральний характеристик(frequency) або  ж equalizer (назвем їх audio bars).  Так як показано нижче.Приклад можна переглянути [тут](https://sound-in-js.herokuapp.com/example4) а повиий код реалізації [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example4)
 
-![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig5.gif?raw=true)
+![](https://github.com/VolodymyrTymets/articles/blob/master/sound-in-js/img/fig5.png?raw=true)
 
 Отже з чого почакти? Для знадобляться два canvases. Пропишіть їх у html та отримай те доступ до них у js.
 
@@ -396,4 +396,38 @@ const loadFile = ({ frequencyC, sinewaveC }, styles, onLoadProcess) => new Promi
 ```
 Даний код конектиться до наого сервера та "make call" track event. після чого отримуємо stream `ss(socket).on('track-stream'` а вже із  stream отримуємо chunk `stream.on('data'`. А маючи інформацію про розмір файлу і довжину chunk можна обрахувати процес завантаження.
 
+Тепер одна з найскладніших части над якою прийшлося добре подумати це як програти файл цілком якщо ми мамо тільки окремі його частини. Тут пиникає одразу кілька проблем.
+### Header
+Перша проблема в тому що ми не можемо просто взяти і написати ось так.
+```
+audioContext.decodeAudioData(data); // will throw exeption here
+```
+А все тому що socket.io-stream відсилає дані в чистому форматі `raw` і decodeAudioData не знає що з ними роби. А іструкції що робити і даними знаходять в header. У першому розділі я нафодив приклад будови файлу і писував там header. ось тепер ця інформація на і пригодилися. щоб вирішити цю проблему можна піти двома шляхами обо виділити header на сервері і відправити клієнту або згенерувати його на клієнті що на мою думку простіши. Для цього можна скористатися функціює `withWaveHeader` (повний код доступний [тут](https://github.com/VolodymyrTymets/sound-in-js/blob/master/client/src/components/Example5/wave-heared.js)). Тепер ша код виглядатиме наступним чином:
+```
+ const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 44100));
+```
+> відповідні функціх ви можете згенерувати для різних типів файлів або ж на йти в інтернеті. Також інформацію про кількість каналі краще брати із файла але для простоти я упустив цей момент.
+
+### Відтворення файлу в цілому
+Тепер коли ми розкодували наші дані ми може їх програти. Але проблема в тому що це леше кусочок даних (навіть на пів секунди) і якщо ми попробуємо програти дані по мірі їх поступлення получиться хаос. Попробуйте виконати наступний код.
+ ```
+ 
+ stream.on('data', async (data) => {
+       const audioBufferChunk = await audioContext.decodeAudioData(withWaveHeader(data, 2, 44100));
+       source = audioContext.createBufferSource();
+       source.buffer = audioBufferChunk;
+       source.connect(audioContext.destination);
+       source.start();
+ ```
+Ви почуєте набір непонятних вам звуків але не пісню. В все тому що дані приходитимуть набагато швидше ніж кожен кусочок сід програвати. Отже кожен кусочок даних слід програвати із певною затримкою. Але з якою? Напевно ця затримка має бути рівна тривалості попереднього кусочка даних. Попробуйе змінти лише одну строчку коду   
+```
+  source.start(source.buffer.duration);
+```
+Даний код означатиме програй мені це аудіо кусок чере `source.buffer.duration` час.
+
+
+
+
 ###   stream server mic
+
+
