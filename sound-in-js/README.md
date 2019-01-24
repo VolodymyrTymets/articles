@@ -15,7 +15,9 @@
 Від теорії перйдем до практики. Для даної статті всі прикладви зробленні Express + React прое основні підходи закладені у них не привязані до якось конкретного фреймфорка.
 
 ## How to load from the server
-Перш за все слід взяти якись файл для роботи (для прикладу візьмем `.wav` file).  Тут заргрузити його з клієнта або ж сервера. З клієнта це зробити досить просто використавши [file input element](https://developer.mozilla.org/ru/docs/Web/HTML/Element/Input/file). Яж хотів більше детальніше показати як вигрузити файл із сервера.  Нижче наведений невеликий приклад реалізації на express js. {!повний код}
+Перш за все слід взяти якись файл для роботи (для прикладу візьмем `.wav` file).  Тут заргрузити його з клієнта або ж сервера. З клієнта це зробити досить просто використавши [file input element](https://developer.mozilla.org/ru/docs/Web/HTML/Element/Input/file). Яж хотів більше детальніше показати як вигрузити файл із сервера.  Нижче наведений невеликий приклад реалізації на express js. Повний код можна прочитати [тут](https://github.com/VolodymyrTymets/sound-in-js/blob/master/server/index.js)
+
+> Усі приклади для даної статті можна переглянути [тут](https://sound-in-js.herokuapp.com). А код дани прикладів моджна глянути у [репозиторії](https://github.com/VolodymyrTymets/sound-in-js)
 ```
 ...
 const express = require('express');
@@ -48,7 +50,7 @@ server.listen('3001',  ()  => console.log('Server app listening on port 3001!'))
 В цілому тут 3 основні кроки. Читання файл і інформації про нього. Вказання заголовка `audio/mpeg` into response. Вигрузка самого файлу. Подібним чином ви можете вигружати будь які файли audio video pdf etc. Все що нам залишається це звернутися за адресою `api/v1/track`.
 
 ## What we can do with sound on client
-Тепер коли ми знаємо як вигружати файли із сервера, наступним кроком буде отримати наш фай на клієнті. Якщо ми просто Виконаємо `GET` !{силка} запит у браузері ми отримаємо на файл. Просте хотілося б використати його на нашій сторінці якимось чином. Найпростіший спосіб це зробити використати елемент [audio](https://www.w3schools.com/html/html5_audio.asp) наступним чином. See example [here](https://sound-in-js.herokuapp.com/example1)
+Тепер коли ми знаємо як вигружати файли із сервера, наступним кроком буде отримати наш фай на клієнті. Якщо ми просто Виконаємо [`GET`](https://sound-in-js.herokuapp.com/api/v1/track) запит у браузері ми отримаємо на файл. Просте хотілося б використати його на нашій сторінці якимось чином. Найпростіший спосіб це зробити використати елемент [audio](https://www.w3schools.com/html/html5_audio.asp) наступним чином. See example [here](https://sound-in-js.herokuapp.com/example1)
 ```
   <audio controls>
       <source src="/api/v1/track" type="audio/mpeg" />
@@ -158,7 +160,7 @@ setInterval(() => {
 
       source.stop();
       source.start(o, playbackTime);
-      // dont foger change startedAt time
+      // dont forger change startedAt time
       // startedAt = Date.now() - playbackTime * 1000;
 }
 ```
@@ -174,12 +176,12 @@ setInterval(() => {
      gainNode.gain.setValueAtTime(level, audioContext.currentTime);
    };
   setVolume(-1); // mute
-  setVolume(2); // speek
+  setVolume(1); // speek
 ```
 Ну от  тепер ви знаєте усе щоб написати свій власний компонет для програвання аудіо файлів. Далі справа за тільки в кастомізації і функціональних можливостях які ван необхідні такі як час відтворення назва файлу перехід на наступний трек і так далі.
 
 ### A litle bit of math
-Тепер коли ви знаєте як програвати аудіо файли як на разунок того щоб генерувувати власні звуки? Хотів показати якмжна у кілтка строк коду генерувати звук різної частотити. Невеликикий приклад можете переглянути [тут](https://sound-in-js.herokuapp.com/example1). повний код можете переглянути [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example3). Для того щоб генерувати звук різної частити слід методом [createOscillator](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createOscillator).
+Тепер коли ви знаєте як програвати аудіо файли як на разунок того щоб генерувувати власні звуки? Хотів показати якмжна у кілтка строк коду генерувати звук різної частотити. Невеликикий приклад можете переглянути [тут](https://sound-in-js.herokuapp.com/example3). повний код можете переглянути [тут](https://github.com/VolodymyrTymets/sound-in-js/tree/master/client/src/components/Example3). Для того щоб генерувати звук різної частити слід методом [createOscillator](https://developer.mozilla.org/en-US/docs/Web/API/BaseAudioContext/createOscillator).
 
 ```
 const getOscillator = (startFrequency) => {
